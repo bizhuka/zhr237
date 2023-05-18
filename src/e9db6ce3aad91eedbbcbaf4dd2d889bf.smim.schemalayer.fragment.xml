@@ -1,0 +1,79 @@
+<core:FragmentDefinition
+        xmlns="sap.suite.ui.commons.networkgraph"
+        xmlns:m="sap.m"
+        xmlns:l="sap.ui.layout"
+        xmlns:core="sap.ui.core"		
+        >
+		<!-- xmlns:mvc="sap.ui.core.mvc" xmlns:f="sap.ui.layout.form" xmlns:smartField="sap.ui.comp.smartfield" -->
+
+	<m:Dialog title="{item>/title}"
+              afterOpen="_onAfterDialogOpen" resizable="true">
+		<!-- <beginButton>
+			<Button text="{item>/actionText}" type="Emphasized" press="handleActionButton"/>
+		</beginButton> -->
+		<!-- <m:endButton>			
+		</m:endButton> -->
+
+        <m:buttons>
+           <m:Button text="Edit desk" press="handleEditDesk" visible="{item>/editMode}"/>
+           <m:Button press="handleDeskChoosed" visible="{= !${item>/editMode}}"
+                     text="{item>/chooseText}"
+                     enabled="{item>/chooseEnabled}"/>
+           <m:Button text="Cancel" press="handleEditCancelButton"/>
+           <m:Button text="Align" press="_doAlign" visible="{= ${item>/is_localhost} &amp;&amp; ${item>/editMode}}"/>
+        </m:buttons>
+		<!-- <l:VerticalLayout class="sapUiContentPadding"> -->
+
+            <Graph  id="graph"
+                    enableWheelZoom="true"
+                    enableZoom="true"
+                    width="75rem"
+                    height="53rem"
+                    nodes="{item>/nodes}"
+                    selectionChange="onSelectionChange"                  
+                    >
+                    <!-- groups="{item>/rooms}" -->
+                <nodes>
+
+                    <!--  group="{item>room_id}" -->
+                    <Node
+                            key="{item>key}"
+                            title="{item>title}"
+                            icon="{icon}"                            
+                            showActionLinksButton="false"
+                            status="{item>status}"
+                            x="{item>x}"
+                            y="{item>y}" 
+                            attributes="{path:'item>attributes', templateShareable:true}"                           
+                            shape="Circle">
+                        <attributes>
+                            <ElementAttribute
+                                    label="{item>label}"
+                                    value="{item>value}"/>
+                        </attributes>
+                        <!-- <actionButtons>
+                            <ActionButton
+                                    icon="sap-icon://inspect"
+                                    title="Destinations"
+                                    press="routeButtonPress"/>
+                        </actionButtons> -->
+                    </Node>
+                </nodes>
+
+
+                <!-- headerCheckBoxState="{headerCheckboxState}" status="Checked"
+                <groups>
+                    <Group key="{item>room_id}"
+                            icon="sap-icon://measure"                  
+                            title="{item>room_id}"
+                            x="100"
+                            y="100"
+                            >
+                    </Group>
+				</groups> -->
+            </Graph>
+
+
+		<!-- </l:VerticalLayout> -->
+	</m:Dialog>
+</core:FragmentDefinition>

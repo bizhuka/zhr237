@@ -1,0 +1,46 @@
+<core:FragmentDefinition
+		xmlns="sap.m"
+		xmlns:l="sap.ui.layout"
+		xmlns:f="sap.ui.layout.form"
+		xmlns:core="sap.ui.core">
+
+	<Dialog title="Create or Edit desk" afterOpen="_onAfterDialogOpen">
+		<buttons>
+			<Button text="Save" type="Emphasized" press=".handleActionButton('SAVE')"/>
+			<Button text="Set position in map" press="handleActionButton('SET')"/>
+			<Button text="Cancel" press="handleEditCancelButton"/>
+		</buttons>
+
+		<l:VerticalLayout
+				class="sapUiContentPadding"
+				width="100%">
+
+			<f:SimpleForm
+					editable="true"
+					layout="ResponsiveGridLayout"
+					singleContainerFullSize="false">
+
+				<Label text="Desk"/>
+				<ComboBox
+				    id="id_desk_combobox"
+                    value="{desk>/place_text}"
+					required="true"
+                    items="{/ZC_HR237_Place}"
+					selectionChange="onSelectionChange">
+				    <core:Item key="{place_text}" text="{place_text} - {orgtx}" />
+			    </ComboBox>
+
+				<Label text="Department"/>
+				<ComboBox
+				    id="id_desk_department"
+                    selectedKey="{desk>/department}"
+					required="true"
+                    items="{/ZC_HR237_Department}">
+				    <core:Item key="{orgeh}" text="{orgeh} - {orgtx}" />
+			    </ComboBox>
+
+
+			</f:SimpleForm>
+		</l:VerticalLayout>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>ZDE_HR237_TIME_TO</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME>SYTIME</DOMNAME>
+    <HEADLEN>02</HEADLEN>
+    <SCRLEN1>02</SCRLEN1>
+    <SCRLEN2>02</SCRLEN2>
+    <SCRLEN3>02</SCRLEN3>
+    <DDTEXT>To</DDTEXT>
+    <REPTEXT>To</REPTEXT>
+    <SCRTEXT_S>To</SCRTEXT_S>
+    <SCRTEXT_M>To</SCRTEXT_M>
+    <SCRTEXT_L>To</SCRTEXT_L>
+    <DTELMASTER>E</DTELMASTER>
+    <REFKIND>D</REFKIND>
+   </DD04V>
+  </asx:values>
+ </asx:abap>
+</abapGit>

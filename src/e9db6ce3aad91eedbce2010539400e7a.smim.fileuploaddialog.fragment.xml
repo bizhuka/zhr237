@@ -1,0 +1,19 @@
+<core:FragmentDefinition
+            xmlns="sap.m"
+            xmlns:form="sap.ui.layout.form"
+            xmlns:core="sap.ui.core"            
+            xmlns:u="sap.ui.unified">
+    <Dialog class="sapUiPopupWithPadding" title="Import from Excel" resizable="false" draggable="false" showHeader="false" horizontalScrolling="false">
+        <content>
+            <form:SimpleForm title="Upload">
+                <form:content>
+                    <u:FileUploader id="fupImport" name="myFileUpload" tooltip="Upload (*.*)" uploadComplete="handleUploadComplete" style="Emphasized" placeholder="Choose a file for Upload (*.*)" sendXHR="true" useMultipart="false" />
+                </form:content>
+            </form:SimpleForm>
+        </content>
+        <buttons>
+            <Button text="Upload File" type="Emphasized" id="btnUpload" press="handleUploadPress" />
+            <Button text="Cancel" type="Emphasized" id="btnCancel" press="handleCancelPress" />
+        </buttons>
+    </Dialog>
+</core:FragmentDefinition>

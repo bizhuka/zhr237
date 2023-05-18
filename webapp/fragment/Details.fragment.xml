@@ -1,0 +1,28 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+    <ResponsivePopover title="{detail>/layer_text} ({detail>/layer_id})" class="sapUiResponsivePadding--header" placement="Auto">
+        <beginButton>
+            <Button text="Edit" type="Emphasized" press="handleEditButton" visible="{detail>/_update_is_active}"/>
+        </beginButton>
+        <endButton>
+            <Button text="{= ${detail>/_update_is_active}?'Delete':'Cancel'}" press="handlePopoverDeleteOrCancel"/>
+        </endButton>
+
+        <f:SimpleForm editable="false" layout="ResponsiveGridLayout" singleContainerFullSize="false">
+
+            <Label text="Booking date"/>
+            <Text text="{ path: 'detail>/datum', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'dd.MM.yyyy', UTC: true } }" />
+
+            <Label text="Personnel Number"/>
+            <Text text="{path : 'detail>/pernr', type : 'sap.ui.model.odata.type.String', constraints : {isDigitSequence : true, maxLength : 8 }}" />
+
+            <Label text="Employee Name" labelFor="moreInfo" />
+            <Text text="{detail>/ename}" />
+
+            <Label text="Desk" />
+            <Text text="{detail>/place_text}" />
+
+            <Label text="Created by" />
+            <Text text="{detail>/user_name} at { path: 'detail>/created_when', type: 'sap.ui.model.type.Time', formatOptions: { pattern: 'dd.MM.yyyy HH:mm:ss', UTC: true } }" />
+        </f:SimpleForm>
+    </ResponsivePopover>
+</core:FragmentDefinition>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xfa generator="AdobeLiveCycleDesigner_V11.0.9.20200413.2.938664_SAP" APIVersion="3.6.20084.0"?>
+<xdp:xdp xmlns:xdp="http://ns.adobe.com/xdp/" timeStamp="2023-05-16T04:36:06Z" uuid="134f6fda-4a93-41d1-bc88-26fe23ff233e">
+<template xmlns:xliff="urn:oasis:names:tc:xliff:document:1.1" xmlns="http://www.xfa.org/schema/xfa-template/3.3/">
+   <?formServer defaultPDFRenderFormat acrobat10.0dynamic?>
+   <subform name="form1" layout="tb" locale="ambient" restoreState="auto">
+      <pageSet>
+         <pageArea name="Page1" id="Page1">
+            <contentArea x="6.35mm" y="6.35mm" w="79.375mm" h="152.4mm"/>
+            <medium stock="6And3QuartersEnvelope" short="92.075mm" long="165.1mm"/>
+            <draw w="41.275mm" h="9.525mm" x="25.4mm" hAlign="center">
+               <value>
+                  <image contentType="image/png">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</image>
+               </value>
+               <ui>
+                  <imageEdit/>
+               </ui>
+               <desc>
+                  <text name="embeddedHref">.\logo-kpo.png</text>
+               </desc>
+            </draw>
+            <?templateDesigner expand 1?></pageArea>
+         <?templateDesigner expand 1?></pageSet>
+      <subform w="79.375mm" layout="tb">
+         <subform name="Subform1" w="79.375mm" layout="tb">
+            <draw name="TITLE" w="79.375mm" h="9.525mm">
+               <ui>
+                  <textEdit/>
+               </ui>
+               <value>
+                  <text xliff:rid="333CBD54-A92B-4155-987A-43A2696D262C">KPO Hybrid booking</text>
+               </value>
+               <font size="20pt" typeface="Arial" weight="bold"/>
+               <margin topInset="0.5mm" bottomInset="0.5mm" leftInset="0.5mm" rightInset="0.5mm"/>
+               <para hAlign="center"/>
+               <?renderCache.bounds 222166 24166 0 0 1417 1417 0 0?>
+               <?renderCache.textRun 18 KPO Hybrid booking 0 14722 17208 0 0 0 "Arial" 1 0 20000 ISO-8859-1?></draw>
+            <subform y="9.525mm" w="79.375mm" layout="tb">
+               <draw name="LAYER_INFO" w="3.125in" h="13.418mm">
+                  <ui>
+                     <textEdit/>
+                  </ui>
+                  <value>
+                     <text xliff:rid="388BE7FE-EB35-41B9-BB77-12649D5FB7D4">Location: {R-LAYER_TEXT} {R-LAYER_ID}</text>
+                  </value>
+                  <font size="16pt" typeface="Arial">
+                     <fill>
+                        <color value="128,128,128"/>
+                     </fill>
+                  </font>
+                  <margin topInset="0.5mm" bottomInset="0.5mm" leftInset="0.5mm" rightInset="0.5mm"/>
+                  <para hAlign="center"/>
+                  <?renderCache.bounds 222166 35201 0 0 1417 1417 0 0?>
+                  <?renderCache.textRun 25 Location: {R-LAYER_TEXT}  0 12895 14050 128 128 128 "Arial" 0 0 16000 ISO-8859-1?>
+                  <?renderCache.textRun 12 {R-LAYER_ID} 0 60031 33250 128 128 128 "Arial" 0 0 16000 ISO-8859-1?></draw>
+               <draw name="DATE" w="79.375mm" h="9.525mm">
+                  <ui>
+                     <textEdit/>
+                  </ui>
+                  <value>
+                     <text xliff:rid="9C1EEEBB-2281-4CBC-9B35-0F4C85A93CE6">Date: {R-DATUM}</text>
+                  </value>
+                  <font size="16pt" typeface="Arial">
+                     <fill>
+                        <color value="128,128,128"/>
+                     </fill>
+                  </font>
+                  <margin topInset="0.5mm" bottomInset="0.5mm" leftInset="0.5mm" rightInset="0.5mm"/>
+                  <para hAlign="center"/>
+                  <?renderCache.bounds 222166 24166 0 0 1417 1417 0 0?>
+                  <?renderCache.textRun 15 Date: {R-DATUM} 0 48930 14050 128 128 128 "Arial" 0 0 16000 ISO-8859-1?></draw>
+               <draw name="DESK" w="79.375mm" h="9.525mm">
+                  <ui>
+                     <textEdit/>
+                  </ui>
+                  <value>
+                     <text xliff:rid="44C17AE3-B0BF-4E9C-8E91-EA38AA69DFF1">Desk: {R-PLACE_TEXT}</text>
+                  </value>
+                  <font size="16pt" typeface="Arial" weight="bold">
+                     <fill>
+                        <color value="255,153,0"/>
+                     </fill>
+                  </font>
+                  <margin topInset="0.5mm" bottomInset="0.5mm" leftInset="0.5mm" rightInset="0.5mm"/>
+                  <para hAlign="center"/>
+                  <?renderCache.bounds 222166 24166 0 0 1417 1417 0 0?>
+                  <?renderCache.textRun 20 Desk: {R-PLACE_TEXT} 0 21813 14050 255 153 0 "Arial" 1 0 16000 ISO-8859-1?></draw>
+               <draw name="PERNR" w="3.125in" h="11.982mm">
+                  <ui>
+                     <textEdit/>
+                  </ui>
+                  <value>
+                     <text xliff:rid="F0C62DF4-EA6D-40FC-ACAF-AD4E1E4EB065">Badge &amp; Name: {R:|{ v-PERNR ALPHA = OUT }|} - {R-ENAME}</text>
+                  </value>
+                  <font size="13pt" typeface="Arial" weight="bold">
+                     <fill>
+                        <color value="255,153,0"/>
+                     </fill>
+                  </font>
+                  <margin topInset="0.5mm" bottomInset="0.5mm" leftInset="0.5mm" rightInset="0.5mm"/>
+                  <para hAlign="center"/>
+                  <?renderCache.bounds 222166 31131 0 0 1417 1417 0 0?></draw>
+               <draw name="Text2" w="79.375mm" h="5.2331mm">
+                  <ui>
+                     <textEdit/>
+                  </ui>
+                  <value>
+                     <text xliff:rid="A55C2500-91D9-4020-8E58-87828DCA9C14">Show QR code to the guard (in Beta*)</text>
+                  </value>
+                  <font typeface="Arial"/>
+                  <margin topInset="0.5mm" bottomInset="0.5mm" leftInset="0.5mm" rightInset="0.5mm"/>
+                  <para hAlign="center"/>
+                  <?renderCache.bounds 222166 12000 0 0 1417 1417 0 0?>
+                  <?renderCache.textRun 36 Show QR code to the guard (in Beta*) 0 28564 9313 0 0 0 "Arial" 0 0 10000 ISO-8859-1?></draw>
+               <?templateDesigner expand 1?></subform>
+            <?templateDesigner expand 1?></subform>
+         <draw name="Line1" w="79.375mm" h="0in">
+            <value>
+               <line slope="/">
+                  <edge stroke="dashed" thickness="0.762mm"/>
+               </line>
+            </value>
+         </draw>
+         <field name="QRCodeBarcode1" w="79.38mm" h="79.37mm" access="readOnly">
+            <ui>
+               <barcode type="QRCode" dataLength="255" moduleWidth="0.1in" moduleHeight="0.1in" errorCorrectionLevel="1"/>
+            </ui>
+            <value>
+               <text xliff:rid="44B05FFB-9A12-41B5-B516-800294466847">{R-QR_CODE}</text>
+            </value>
+         </field>
+         <?templateDesigner expand 1?></subform>
+      <proto/>
+      <desc>
+         <text name="version">11.0.9.20200413.2.938664.934558</text>
+      </desc>
+      <?templateDesigner expand 1?>
+      <?renderCache.subset "Arial" 0 0 ISO-8859-1 4 144 36 0003000B000C000D0010001D0024002500270028002C002F003000340035003600370038003B003C00420044004600470048004A004B004C00510052005500570058005A005E0060 ()*-:ABDEILMQRSTUXY_acdeghinortuw{}?>
+      <?renderCache.subset "Arial" 1 0 ISO-8859-1 4 156 39 000300090010001D002000240025002600270028002B002E002F0030003100320033003500370038003B00420044004500470048004A004C004E005000510052005500560059005C005E005F0060 &-:=ABCDEHKLMNOPRTUX_abdegikmnorsvy{|}?></subform>
+   <?templateDesigner DefaultPreviewDynamic 1?>
+   <?templateDesigner DefaultRunAt client?>
+   <?templateDesigner Grid show:1, snap:1, units:0, color:ff8080, origin:(0,0), interval:(125000,125000)?>
+   <?templateDesigner DefaultCaptionFontSettings face:Arial;size:10;weight:normal;style:normal?>
+   <?templateDesigner DefaultValueFontSettings face:Arial;size:10;weight:normal;style:normal?>
+   <?templateDesigner DefaultLanguage JavaScript?>
+   <?acrobat JavaScript strictScoping?>
+   <?templateDesigner WidowOrphanControl 0?>
+   <?templateDesigner SaveTaggedPDF 0?>
+   <?templateDesigner SavePDFWithEmbeddedFonts 0?>
+   <?templateDesigner SavePDFWithLog 0?>
+   <?templateDesigner FormTargetVersion 33?>
+   <?templateDesigner Zoom 150?>
+   <?templateDesigner Rulers horizontal:1, vertical:1, guidelines:1, crosshairs:0?></template>
+<config xmlns="http://www.xfa.org/schema/xci/3.0/">
+   <agent name="designer">
+      <!--  [0..n]  -->
+      <destination>pdf</destination>
+      <pdf>
+         <!--  [0..n]  -->
+         <fontInfo/>
+      </pdf>
+   </agent>
+   <present>
+      <!--  [0..n]  -->
+      <pdf>
+         <!--  [0..n]  -->
+         <version>1.7</version>
+         <adobeExtensionLevel>8</adobeExtensionLevel>
+      </pdf>
+      <xdp>
+         <packets>*</packets>
+      </xdp>
+   </present>
+</config>
+<localeSet xmlns="http://www.xfa.org/schema/xfa-locale-set/2.7/"/>
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.6-c015 81.161580, 2017/12/01-01:38:21        ">
+   <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <rdf:Description xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:pdf="http://ns.adobe.com/pdf/1.3/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:desc="http://ns.adobe.com/xfa/promoted-desc/" rdf:about="">
+         <xmp:MetadataDate>2023-05-16T04:36:06Z</xmp:MetadataDate>
+         <xmp:CreatorTool>Adobe LiveCycle Designer 11.0</xmp:CreatorTool>
+         <pdf:Producer>Adobe LiveCycle Designer 11.0</pdf:Producer>
+         <xmpMM:DocumentID>uuid:134f6fda-4a93-41d1-bc88-26fe23ff233e</xmpMM:DocumentID>
+         <desc:version rdf:parseType="Resource">
+            <rdf:value>11.0.9.20200413.2.938664.934558</rdf:value>
+            <desc:ref>/template/subform[1]</desc:ref>
+         </desc:version>
+      </rdf:Description>
+   </rdf:RDF>
+</x:xmpmeta></xdp:xdp>

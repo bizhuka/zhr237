@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:Reference Uri=".12/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMON',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="Common"/>
+    </edmx:Reference>
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZC_HR237_BOOKING_CDS" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="ZC_HR237_BookingType" sap:label="Booking" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="datum"/>
+                    <PropertyRef Name="place_id"/>
+                </Key>
+                <Property Name="datum" Type="Edm.DateTime" Nullable="false" Precision="0" sap:display-format="Date" sap:label="Date"/>
+                <Property Name="created_when" Type="Edm.DateTimeOffset" Precision="0" sap:label="Created time"/>
+                <Property Name="place_id" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Place ID"/>
+                <Property Name="pernr" Type="Edm.String" MaxLength="8" sap:display-format="NonNegative" sap:text="ename" sap:label="Requester Pers No."/>
+                <Property Name="ename" Type="Edm.String" MaxLength="40" sap:label="Employee/app.name"/>
+                <Property Name="layer_id" Type="Edm.String" MaxLength="2" sap:display-format="UpperCase" sap:text="layer_text" sap:label="Layer ID"/>
+                <Property Name="layer_text" Type="Edm.String" MaxLength="100" sap:label="Layer Text"/>
+                <Property Name="place_text" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Room &amp; desk"/>
+                <Property Name="create_by" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:text="user_name" sap:label="Created by"/>
+                <Property Name="user_name" Type="Edm.String" MaxLength="80" sap:label="Full Name"/>
+            </EntityType>
+            <EntityContainer Name="ZC_HR237_BOOKING_CDS_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="ZC_HR237_Booking" EntityType="ZC_HR237_BOOKING_CDS.ZC_HR237_BookingType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:searchable="true" sap:content-version="1"/>
+            </EntityContainer>
+            <atom:link rel="self" href="http://happ01kd6.kio.kz:8012/sap/opu/odata/sap/ZC_HR237_BOOKING_CDS/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="http://happ01kd6.kio.kz:8012/sap/opu/odata/sap/ZC_HR237_BOOKING_CDS/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

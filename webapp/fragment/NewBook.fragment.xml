@@ -1,0 +1,69 @@
+<core:FragmentDefinition
+		xmlns="sap.m"
+		xmlns:l="sap.ui.layout"
+		xmlns:f="sap.ui.layout.form"
+		xmlns:core="sap.ui.core">
+
+	<Dialog title="{book>/layer_text} ({book>/layer_id}) - {book>/name1} ({book>/persa})" afterOpen="_onAfterDialogOpen">
+		<buttons>
+			<Button text="{= ${book>/_edit_callback} ? 'Change': 'Book'}" type="Emphasized" press="handleActionButton"/>
+			<Button text="Cancel" press="handleEditCancelButton"/>
+		</buttons>
+
+		<l:VerticalLayout
+				class="sapUiContentPadding"
+				width="100%">
+
+			<f:SimpleForm
+					editable="true"
+					layout="ResponsiveGridLayout"
+					singleContainerFullSize="false">
+
+                <Label text="Date"/>
+                <DatePicker required="true"
+                            value="{ path: 'book>/datum', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'dd.MM.yyyy', UTC: true } }"
+                            minDate="{book>/minDate}"
+							maxDate="{book>/maxDate}"
+                            change="onDateChanged"/>
+
+				<Label text="Schema"/>
+				<ComboBox
+				    id="id_new_layer_id"
+                    selectedKey="{book>/layer_id}"
+					required="true"
+                    items="{/ZC_HR237_Layer}"
+					selectionChange="_on_schema_combobox_changed"
+                    >
+				    <core:Item key="{layer_id}" text="{layer_id} - {layer_text}" />
+			    </ComboBox>
+				
+                <Label text="Employee" visible="{book>/is_manager}"/>
+				<ComboBox                
+                    id="id_new_book_pernr"
+                    selectedKey="{book>/pernr}"
+					required="true"
+                    items="{/ZC_HR237_DIR_SUBO}"
+                    visible="{book>/is_manager}">
+				    <core:Item key="{pernr}" text="{pernr} - {full_name}" />
+			    </ComboBox>
+
+				<Label text="Desk"/>
+                <HBox width="100%">
+				<!-- value="{book>/place_id}" ? -->
+				<ComboBox
+				    id="id_new_book_desk"
+                    selectedKey="{book>/place_id}"					
+					required="true"
+                    items="{/ZC_HR237_Place}"
+                    >
+				    <core:Item key="{place_id}" text="{place_text} - {orgtx}" />
+			    </ComboBox>
+
+                <Button text="Show desks" icon="sap-icon://map-2" press="onWhatchSchema" />
+				<Button icon="sap-icon://map" press="onShowMap" tooltip="Show map"/>
+                </HBox>
+
+			</f:SimpleForm>
+		</l:VerticalLayout>
+	</Dialog>
+</core:FragmentDefinition>

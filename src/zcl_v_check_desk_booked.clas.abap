@@ -1,0 +1,62 @@
+CLASS zcl_v_check_desk_booked DEFINITION
+  PUBLIC
+  INHERITING FROM /bobf/cl_lib_v_supercl_simple
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    METHODS /bobf/if_frw_validation~execute
+        REDEFINITION .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS ZCL_V_CHECK_DESK_BOOKED IMPLEMENTATION.
+
+
+  METHOD /bobf/if_frw_validation~execute.
+    " Called 2 times. Skip 1 of them
+    CHECK is_ctx-val_time = 'CHECK_BEFORE_SAVE'.
+
+    IF eo_message IS INITIAL.
+      eo_message = /bobf/cl_frw_factory=>get_message( ).
+    ENDIF.
+
+    DATA(lt_booking) = VALUE ztchr237_booking( ).
+    io_read->retrieve(
+      EXPORTING iv_node       = is_ctx-node_key
+                it_key        = it_key
+                iv_fill_data  = abap_true
+      IMPORTING et_data       = lt_booking ).
+
+    LOOP AT lt_booking ASSIGNING FIELD-SYMBOL(<ls_booking>).
+      TRY.
+          DATA(lv_error_message) = zcl_hr237_book=>check_is_already_exists( CORRESPONDING #( <ls_booking> ) ).
+
+          IF lv_error_message IS INITIAL.
+            lv_error_message = zcl_hr237_opt=>check_date_is_ok( <ls_booking>-datum ).
+          ENDIF.
+
+          CHECK lv_error_message IS NOT INITIAL.
+          zcx_eui_no_check=>raise_sys_error( iv_message = lv_error_message ).
+        CATCH zcx_eui_no_check INTO DATA(lo_error).
+          APPEND VALUE #( key = <ls_booking>-key ) TO et_failed_key.
+
+          eo_message->add_message(
+            is_msg       = VALUE #( msgid = 'ZEUI_MESSAGE'
+                                    msgty = 'E'
+                                    msgv1 = lo_error->msgv1
+                                    msgv2 = lo_error->msgv2
+                                    msgv3 = lo_error->msgv3
+                                    msgv4 = lo_error->msgv4 )
+            iv_node      = is_ctx-node_key
+            iv_key       = <ls_booking>-key ).
+      ENDTRY.
+    ENDLOOP.
+
+*    ZCL_BOPF_MESSAGES=>raise_error( IV_MESSAGE = 'Nooooo' ).
+  ENDMETHOD.
+ENDCLASS.
