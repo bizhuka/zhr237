@@ -4,7 +4,6 @@ sap.ui.define([
         "use strict";
 
         return ODataMessageParser.extend("zhr237.ext.controller.MessageParser", {
-            libs: new Libs(),
 
             parse: function (oResponse, oRequest, mGetEntities, mChangeEntities, bMessageScopeSupported) {
                 var _this = this
@@ -31,7 +30,7 @@ sap.ui.define([
                 if (allMessages.length === 0)
                     return
 
-                this.libs.showMessage(allMessages.join('\n'), allTypes.indexOf("Error") >= 0)
+                Libs.showMessage(allMessages.join('\n'), allTypes.indexOf("Error") >= 0)
             }
 
         });

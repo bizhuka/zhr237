@@ -14,7 +14,6 @@ sap.ui.define([
 
         constructor: function (owner) {
             this.owner = owner
-            this.libs = new Libs()
 
             this._model = new sap.ui.model.json.JSONModel()
             this._model.setDefaultBindingMode(sap.ui.model.BindingMode.TwoWay);
@@ -29,19 +28,24 @@ sap.ui.define([
             this.userInfo = userInfo
             this.previous_values = previous_values
 
-            this.libs.copy_from(previous_values, this._book)
+            Libs.copy_from(previous_values, this._book)
 
-            this._book.minDate = this.libs.get_date_from_now(userInfo.min_date)
-            this._book.maxDate = this.libs.get_date_from_now(userInfo.max_date)
+            this._book.minDate = Libs.get_date_from_now(userInfo.min_date)
+            this._book.maxDate = Libs.get_date_from_now(userInfo.max_date)
 
-            this._book.is_manager = userInfo.is_manager
+            this._book.is_super_user = userInfo.is_manager || userInfo.is_admin
 
             this.layerCombobox = sap.ui.getCore().byId('id_new_layer_id')
             this.pernrCombobox = sap.ui.getCore().byId('id_new_book_pernr')
             this.desksCombobox = sap.ui.getCore().byId('id_new_book_desk')
 
+            this.layerCombobox.setSelectedKey(null)
+            this.desksCombobox.setSelectedKey(null)
+            if (this._book.is_super_user)
+                this.pernrCombobox.setSelectedKey(null)
+
             // Show what available
-            this.layerCombobox.getBinding("items").filter(new Filter("persa", FilterOperator.EQ, this.userInfo.persa))
+            // this.layerCombobox.getBinding("items").filter(new Filter("persa", FilterOperator.EQ, this.userInfo.persa))
 
             this._update_bindings()
 
@@ -54,7 +58,7 @@ sap.ui.define([
             this.pernrCombobox.getBinding("items").filter([new Filter("persa", FilterOperator.EQ, this._book.persa)])
 
             this.owner.getOwnerComponent().getModel().read("/ZC_HR237_Booking", {
-                filters: this._make_default_filter(new Filter("datum", FilterOperator.EQ, this.libs.getDateIso(this.libs.get_noon(this._book.datum)))),
+                filters: this._make_default_filter(new Filter("datum", FilterOperator.EQ, Libs.getDateIso(Libs.get_noon(this._book.datum)))),
 
                 urlParameters: {
                     "$select": "place_id" +
@@ -63,7 +67,7 @@ sap.ui.define([
 
                 success: function (data) {
                     // if edit then show currently booked desk in combobox
-                    if (this.previous_values._edit_callback)
+                    if (this.previous_values._change)
                         data.results = data.results.filter(item => item.place_id !== this.previous_values.place_id)
 
                     this._skip_desks = data.results
@@ -113,7 +117,7 @@ sap.ui.define([
 
         handleActionButton: function () {
             const newBooking = {
-                datum: this.libs.get_noon(this._book.datum),
+                datum: Libs.get_noon(this._book.datum),
                 pernr: this.pernrCombobox.getSelectedKey(),
                 place_id: this.desksCombobox.getSelectedKey()
             }
@@ -123,28 +127,26 @@ sap.ui.define([
             console.log(this.desksCombobox.getSelectedItem())
 
             if (!newBooking.pernr || !newBooking.place_id || !this._book.datum) {
-                this.libs.showMessage('Fill all required fields', true)
+                Libs.showMessage('Fill all required fields', true)
                 return
             }
 
-            if (this.previous_values._edit_callback) {
+            if (this.previous_values._change) {
                 newBooking.datum_prev = this.previous_values.datum
                 newBooking.pernr_prev = this.previous_values.pernr
                 newBooking.place_id_prev = this.previous_values.place_id
             }
-            this.owner.getView().getModel().create(this._book._edit_callback ? '/ZC_HR237_QrCode' : '/ZC_HR237_Booking',
+            this.owner.getView().getModel().create(this._book._change ? '/ZC_HR237_QrCode' : '/ZC_HR237_Booking',
                 newBooking,
                 {
                     success: function (booking) {
-                        this.libs.send_request(this.libs.get_qr_code_url(booking.datum, booking.pernr, 'NOTIFY'))
+                        Libs.send_request(Libs.get_qr_code_url(booking.datum, booking.pernr, 'NOTIFY'))
 
-                        this.libs.showMessage(
-                            `Desk ${booking.place_text} booked for ${this.libs.date_to_text(booking.datum)}\n` +
+                        Libs.showMessage(
+                            `Desk ${booking.place_text} booked for ${Libs.date_to_text(booking.datum)}\n` +
                             `Notification to ${booking.ename} via email is sent`)
 
-                        if (this.previous_values._edit_callback)
-                            this.previous_values._edit_callback()
-                        this.owner.mainView.getObjectBinding().refresh()
+                        this.owner.onStartDateChange()
                         this._dialog.close()
                     }.bind(this)
                 })
@@ -152,20 +154,22 @@ sap.ui.define([
 
         onShowMap: function () {
             if (!this._book.layer_address) {
-                this.libs.showMessage('Please select schema', true)
+                Libs.showMessage('Please select schema', true)
                 return
             }
             window.open(`https://www.google.com/maps/place/${encodeURIComponent(this._book.layer_address)}`, '_blank').focus()
         },
-        
+
         onWhatchSchema: function () {
             if (!this._book.layer_address) {
-                this.libs.showMessage('Please select schema', true)
+                Libs.showMessage('Please select schema', true)
                 return
             }
 
+            sap.ui.core.BusyIndicator.show(0)
             if (!this.owner._schemaLayer)
                 this.owner._schemaLayer = new SchemaLayer(this.owner)
+            sap.ui.core.BusyIndicator.hide()
 
             const addFilter = this._make_default_filter()
             this.owner._schemaLayer.display(`${this._book.layer_id}^${this._book.layer_text}`, {
@@ -177,10 +181,14 @@ sap.ui.define([
             })
         },
 
-
         handleEditCancelButton: function () {
             this._dialog.close()
         },
+
+        initPernr: function(oEvent){
+            sap.ui.getCore().byId("id_pernr").setValue(this._book.pernr)
+            sap.ui.getCore().byId("id_pernr-input").setValue(this._book.pernr)
+        }
 
     });
 }

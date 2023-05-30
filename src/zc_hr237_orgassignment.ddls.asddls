@@ -4,10 +4,11 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Org. Assignment'
 
+@ZABAP.virtualEntity: 'ZCL_HR237_P0001'
 define view ZC_HR237_OrgAssignment as select from ZC_PY000_OrgAssignment {
     key pernr,
-    key endda,
-    key begda,
+    endda,
+    begda,
     
     ename,
     datum,
@@ -23,6 +24,8 @@ define view ZC_HR237_OrgAssignment as select from ZC_PY000_OrgAssignment {
     stell,
     bukrs,
     kosar,
+    
+    cast('00000000' as abap.numc( 8 ) ) as department,
     
     /* Associations */
     _CostCenter,

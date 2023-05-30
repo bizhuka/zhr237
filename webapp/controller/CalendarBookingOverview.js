@@ -16,7 +16,6 @@ sap.ui.define([
         // No view. Use owners tab
         constructor: function (owner) {
             this.owner = owner
-            this.libs = new Libs()
 
             this.calendarModel = new JSONModel()
             this.calendarModel.setData(this._calendarData)
@@ -32,7 +31,7 @@ sap.ui.define([
             this.owner.getOwnerComponent().getModel().read("/ZC_HR237_Booking", {
                 filters: [
                     new Filter("pernr", FilterOperator.EQ, '77777777'), // get own & direct subordinates data
-                    new Filter("datum", FilterOperator.EQ, this.libs.getDateIso(this.libs.get_noon(calendar.getStartDate()))),
+                    new Filter("datum", FilterOperator.EQ, Libs.getDateIso(Libs.get_noon(calendar.getStartDate()))),
                     // TODO real filter by layer_id & pernr ?  Fuzyy search ?
                     new Filter("layer_id", FilterOperator.EQ, days_count),
                 ],
@@ -43,7 +42,7 @@ sap.ui.define([
                         const person = persons[item.pernr] ? persons[item.pernr] : {
                             title: item.pernr,
                             text: item.ename,
-                            avatar: this.libs.get_avatar_url(item.pernr, 64),
+                            avatar: Libs.get_avatar_url(item.pernr, 64),
                             bookings: []
                         }
                         const day = this.geWholeDay(item.datum)

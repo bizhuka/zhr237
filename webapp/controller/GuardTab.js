@@ -13,12 +13,10 @@ sap.ui.define([
 
         constructor: function (owner) {
             this.owner = owner
-            this.libs = new Libs()
-            const _libs = this.libs
 
             owner.byId('idCheckBookingTable').attachBeforeRebindTable(function (oEvent) {
                 const oBindingInfo = oEvent.getParameter("bindingParams")
-                this.libs.addBindingListener(oBindingInfo, "dataReceived", this.onDataReceived.bind(this));
+                Libs.addBindingListener(oBindingInfo, "dataReceived", this.onDataReceived.bind(this));
             }.bind(this))
 
             this.pernrFilter = owner.byId('idCheckBookingFilter-filterItemControl_BASIC-pernr')
@@ -31,7 +29,7 @@ sap.ui.define([
             datumFilter.setValueState('None')
 
             function set_date_filter(datum) {
-                datumFilter.setValue(_libs.getDateIso(_libs.get_noon(datum)))
+                datumFilter.setValue(Libs.getDateIso(Libs.get_noon(datum)))
             }
             function fireSearchBooking() {
                 filterBar.fireSearch()
@@ -48,12 +46,12 @@ sap.ui.define([
                         keepCameraScan: true,
 
                         scanFail: function (oEvent) {
-                            this.libs.showMessage("Scan failed: " + oEvent, true)
+                            Libs.showMessage("Scan failed: " + oEvent, true)
                         },
 
                         scanSuccess: function (oEvent) {
                             if (oEvent.getParameter("cancelled")) {
-                                this.libs.showMessage("Scan cancelled", true)
+                                Libs.showMessage("Scan cancelled", true)
                                 return
                             }
 
@@ -61,9 +59,9 @@ sap.ui.define([
                             const arrParts = qr_code.split('-')
 
                             if (qr_code.length !== 17 ||
-                                !this.libs.isNumeric(qr_code.replace('-', '')) ||
+                                !Libs.isNumeric(qr_code.replace('-', '')) ||
                                 arrParts.length !== 2 || arrParts[0].length !== 8 || arrParts[1].length !== 8) {
-                                this.libs.showMessage(`QR code ${qr_code} is invalid`, true)
+                                Libs.showMessage(`QR code ${qr_code} is invalid`, true)
                                 return
                             }
 
@@ -95,8 +93,8 @@ sap.ui.define([
                     })
 
                 })
-            this._avatarDialog.setTitle(`${booking.ename} - ${booking.place_text} - ${this.libs.date_to_text(booking.datum)}`)
-            this._avatarDialog.getContent()[0].getItems()[0].setSrc(this.libs.get_avatar_url(booking.pernr, 400))
+            this._avatarDialog.setTitle(`${booking.ename} - ${booking.place_text} - ${Libs.date_to_text(booking.datum)}`)
+            this._avatarDialog.getContent()[0].getItems()[0].setSrc(Libs.get_avatar_url(booking.pernr, 400))
             this._avatarDialog.open()
         }
     });

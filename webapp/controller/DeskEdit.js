@@ -13,7 +13,6 @@ sap.ui.define([
 
         constructor: function (owner) {
             this.owner = owner
-            this.libs = new Libs()
 
             this._model = new sap.ui.model.json.JSONModel()
             this._model.setDefaultBindingMode(sap.ui.model.BindingMode.TwoWay);
@@ -50,18 +49,18 @@ sap.ui.define([
             const place_id = `${this.layer_id}-${place_text}`
 
             if (!place_id || !place_id.match(/^[\s\S][\s\S]-\d+-\d+$/)) {
-                this.libs.showMessage(`Desk number '${place_id}' is invalid`, true)
+                Libs.showMessage(`Desk number '${place_id}' is invalid`, true)
                 return
             }
 
             if (this._desk.department === '') {
-                this.libs.showMessage(`Please choose department`, true)
+                Libs.showMessage(`Please choose department`, true)
                 return
             }
 
             const is_new = selectedKey === ''
             if (is_new && action === 'SAVE')
-                this.libs.showMessage(`Please set position for desk '${place_id}'`)
+                Libs.showMessage(`Please set position for desk '${place_id}'`)
             action = is_new ? 'SET' : action
 
             this.callBack(action, is_new, {

@@ -11,7 +11,6 @@ sap.ui.define([
 
         constructor: function (owner) {
             this.owner = owner
-            this.libs = new Libs()
 
             this._model = new sap.ui.model.json.JSONModel()
             this._model.setDefaultBindingMode(sap.ui.model.BindingMode.TwoWay);
@@ -24,10 +23,10 @@ sap.ui.define([
 
         showPopup: function (oAppointment) {
             const src = oAppointment.getBindingContext('calendar').getObject()._src
-            this.libs.copy_from(src, this._detail)
+            Libs.copy_from(src, this._detail)
             this._detail._update_is_active =
-                this.libs.getDateIso(this.libs.get_noon(this._detail.datum))
-                >= this.libs.getDateIso(this.libs.get_noon(new Date()))
+                Libs.getDateIso(Libs.get_noon(this._detail.datum))
+                >= Libs.getDateIso(Libs.get_noon(new Date()))
 
             this._model.updateBindings()
             this._popup.openBy(oAppointment);
@@ -45,16 +44,12 @@ sap.ui.define([
                 layer_text: this._detail.layer_text,
                 name1: this._detail.name1,
                 place_id: this._detail.place_id,
-                _edit_callback: this.refresh_calendar.bind(this)
+                _change: true
             })
         },
 
         handleEditCancelButton: function () {
             this._dialog.close()
-        },
-
-        refresh_calendar: function () {
-            this.owner.onStartDateChange()
         },
 
         handlePopoverDeleteOrCancel: function () {
@@ -75,11 +70,11 @@ sap.ui.define([
                         press: function () {
                             this.oConfirmDialog.close()
 
-                            this.owner.getView().getModel().remove(`/ZC_HR237_Booking(datum=datetime'${this.libs.getDateIso(_detail.datum)}T00%3A00%3A00',pernr='${_detail.pernr}')`,
+                            this.owner.getView().getModel().remove(`/ZC_HR237_Booking(datum=datetime'${Libs.getDateIso(_detail.datum)}T00%3A00%3A00',pernr='${_detail.pernr}')`,
                                 {
                                     success: function () {
-                                        this.libs.showMessage(`Item ${_detail.place_id} for ${_detail.ename} at ${this.libs.date_to_text(_detail.datum)} was successfully deleted`)
-                                        this.refresh_calendar()
+                                        Libs.showMessage(`Item ${_detail.place_id} for ${_detail.ename} at ${Libs.date_to_text(_detail.datum)} was successfully deleted`)
+                                        this.owner.onStartDateChange()
                                     }.bind(this)
                                 })
                         }.bind(this)

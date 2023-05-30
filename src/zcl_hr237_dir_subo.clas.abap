@@ -10,6 +10,9 @@ CLASS zcl_hr237_dir_subo DEFINITION
       zif_sadl_read_runtime.
 
     CLASS-METHODS:
+      get_department IMPORTING iv_plans             TYPE p0001-plans
+                               iv_datum             TYPE d
+                     RETURNING VALUE(rv_department) TYPE orgeh,
       get_direct_subordinates RETURNING VALUE(rt_pernr) TYPE pernr_tab.
 
   PROTECTED SECTION.
@@ -19,6 +22,15 @@ ENDCLASS.
 
 
 CLASS ZCL_HR237_DIR_SUBO IMPLEMENTATION.
+
+
+  METHOD get_department.
+    rv_department = zcl_hr_om_utilities=>find_hlevel( im_otype = 'S'
+                                                      im_objid = iv_plans
+                                                      im_datum = iv_datum
+                                                      im_wegid = 'ZS-O-O'
+                                                      im_hlevel = 'DEPARTMENT' ).
+  ENDMETHOD.
 
 
   METHOD get_direct_subordinates.
@@ -38,7 +50,7 @@ CLASS ZCL_HR237_DIR_SUBO IMPLEMENTATION.
       FROM hrp1001
       WHERE plvar EQ '01'
         AND otype EQ 'S'
-        and objid EQ @ls_0001-plans
+        AND objid EQ @ls_0001-plans
         AND rsign EQ 'A'
         AND relat EQ '003'
         AND begda LE @lv_datum
@@ -68,11 +80,7 @@ CLASS ZCL_HR237_DIR_SUBO IMPLEMENTATION.
     TYPES: BEGIN OF ts_filter,
              persa TYPE zc_hr237_dir_subo-persa,
            END OF ts_filter.
-
-    IF ir_key IS NOT INITIAL.
-      ASSIGN ir_key->* TO FIELD-SYMBOL(<ls_key>).
-      DATA(ls_filter) = CORRESPONDING ts_filter( <ls_key> ).
-    ENDIF.
+    DATA(ls_filter) = CORRESPONDING ts_filter( is_filter ).
 
     DATA(lt_pernrs) = get_direct_subordinates( ).
     DATA(lv_datum) = sy-datum.
@@ -92,16 +100,11 @@ CLASS ZCL_HR237_DIR_SUBO IMPLEMENTATION.
       ls_line-persa     = ls_0001-werks.
 
       IF ls_0001-plans IS NOT INITIAL.
-        ls_line-position_txt = zcl_hr_om_utilities=>get_object_full_name( im_otype = 'S'
-                                                                          im_objid = ls_0001-plans
-                                                                          im_subty = '0001'
-                                                                          im_datum = lv_datum ).
+        ls_line-position_txt = ZCL_HR237_BOOK=>get_long_text( iv_objid = ls_0001-plans
+                                                              iv_otype = 'S' ).
 
-        ls_line-department = zcl_hr_om_utilities=>find_hlevel( im_otype = 'S'
-                                                               im_objid = ls_0001-plans
-                                                               im_datum = lv_datum
-                                                               im_wegid = 'ZS-O-O'
-                                                               im_hlevel = 'DEPARTMENT' ).
+        ls_line-department = get_department( iv_plans = ls_0001-plans
+                                             iv_datum = lv_datum ).
       ENDIF.
 
       DATA(lt_communication) = CAST p0105_tab_t( zcl_hr_read=>infty_tab(

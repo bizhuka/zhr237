@@ -1,0 +1,28 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+
+    <HBox>
+        <Select items="{chart>/_periods}"
+                    selectedKey="{chart>/_period_key}"
+                    change="_read_all_chart">
+            <core:Item key="{chart>key}" text="{chart>value}" />
+        </Select>
+
+        <Button enabled="false"/>
+
+
+        <ComboBox
+            selectedKey="{chart>/_orgeh_filter}"
+            items="{ path: '/ZC_HR237_Department',
+                filters: [{
+                    path: 'place_count',
+                    operator: 'GT',
+                    value1: '0'
+                }] }"
+            selectionChange="_read_all_chart">
+            <core:Item key="{orgeh}" text="{orgtx}" />
+        </ComboBox>
+    </HBox>
+
+</core:FragmentDefinition>

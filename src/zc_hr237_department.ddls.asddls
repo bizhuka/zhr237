@@ -4,7 +4,7 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Department'
 
-
+@ZABAP.virtualEntity: 'ZCL_HR237_DEPARTMENT'
 define view ZC_HR237_Department as select from ZC_PY000_OrgUnit as _main
 
 inner join ZC_PY000_Attribute as _Attribute on _Attribute.otype  = 'O'
@@ -16,7 +16,11 @@ inner join ZC_PY000_Attribute as _Attribute on _Attribute.otype  = 'O'
                                            and _Attribute.infty  = '1222'
                                            and _Attribute.attrib = 'HLEVEL'
                                            and _Attribute.low    = 'DEPARTMENT'
+                                           
+left outer to one join zdhr237_place as _place on _place.department = _main.orgeh
 {
     key orgeh,
-        orgtx
-}
+        cast( orgtx as abap.char( 255 ) ) as orgtx,
+        
+        count( distinct _place.place_id ) as place_count
+}group by orgeh, orgtx

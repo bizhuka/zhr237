@@ -10,7 +10,6 @@ sap.ui.define([
 
         constructor: function (owner) {
             this.owner = owner
-            this.libs = new Libs()
 
             this.dialog = sap.ui.xmlfragment("zhr237.fragment.FileUploadDialog", this);
             owner.getView().addDependent(this.dialog);
@@ -44,7 +43,7 @@ sap.ui.define([
 
             // refresh something
 
-            this.libs.showMessage(sMsg, has_error)
+            Libs.showMessage(sMsg, has_error)
         },
 
         handleUploadPress: function () {

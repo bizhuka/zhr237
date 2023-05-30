@@ -1,9 +1,9 @@
 sap.ui.define([
-    "sap/ui/base/Object",
-], function (Object) {
+    "sap/m/MessageToast",
+], function (MessageToast) {
     "use strict";
 
-    return Object.extend("zhr237.controller.Libs", {
+    return {
 
         getDateIso: function (date) {
             const okDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60 * 1000))
@@ -40,7 +40,7 @@ sap.ui.define([
         },
 
         showMessage: function (message, error) {
-            sap.m.MessageToast.show(message, { duration: 3500 })
+            MessageToast.show(message, { duration: 3500 })
             if (error)
                 $(".sapMMessageToast").css("background", "#cc1919")
         },
@@ -88,6 +88,5 @@ sap.ui.define([
             }
         },
 
-    });
-}
-);
+	};
+});

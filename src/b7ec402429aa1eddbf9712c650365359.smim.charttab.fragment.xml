@@ -1,0 +1,154 @@
+<core:FragmentDefinition
+	xmlns="sap.suite.ui.commons"
+	xmlns:m="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+
+	xmlns:viz="sap.viz.ui5.controls"	
+	xmlns:vizData="sap.viz.ui5.data"
+	xmlns:vizFeeds="sap.viz.ui5.controls.common.feeds"
+	
+	xmlns:layout="sap.ui.layout"
+	xmlns:core="sap.ui.core">
+
+	<layout:Splitter width="100%" height="100%">
+		<layout:contentAreas>
+			<ChartContainer
+				showFullScreen="true"
+				showPersonalization="false"
+				autoAdjustHeight="true"
+				showSelectionDetails="false"
+				showLegendButton="false"
+				title="------">
+
+				<dimensionSelectors>
+					<core:Fragment fragmentName="zhr237.fragment.ChartFilters" type="XML"/>
+				</dimensionSelectors>
+
+				<!-- <customIcons>
+					<core:Icon></core:Icon>
+				</customIcons> -->
+
+				<content>
+					<ChartContainerContent>
+						<content>
+							<viz:Popover id="popOverDynamics"></viz:Popover>
+							<viz:VizFrame id="frameDynamics"
+							              height="40rem" width="auto"
+							              uiConfig="{applicationSet:'fiori'}"
+										  vizProperties="{
+											plotArea:{
+												primaryScale: { fixedRange: true, maxValue: 20 },
+												referenceLine: {
+													line: {
+														primaryValues: [{
+															value: 9,
+															visible: true,
+															label: {
+																text: 'Max. capacity',
+																visible: true,
+																background: 'sapUiNegativeElement'
+															},
+															color: 'sapUiNegativeElement'
+														},{
+															value: 4,
+															visible: true,
+															label: {
+																text: 'Average value',
+																visible: true,
+																background: 'sapUiCriticalElement'
+															},
+															color: 'sapUiCriticalElement'
+														}]
+													}
+												},
+												
+												dataLabel:{visible: true},
+												drawingEffect: 'glossy'
+											},
+										  	title: {text : 'General Booking dynamics', visible : true}
+										  }"
+										  vizType="column"
+										  >
+
+								<viz:dataset>
+									<vizData:FlattenedDataset data="{chart>/_dynamics}">
+										<vizData:dimensions>
+											<vizData:DimensionDefinition name="Period" value="{chart>period}"/>
+										</vizData:dimensions>
+
+										<vizData:measures>
+											<vizData:MeasureDefinition name="Bookings count" value="{chart>cnt}"/>
+											<!-- <vizData:MeasureDefinition name="Max. capacity"  value="{chart>target_cnt}"/> -->
+										</vizData:measures>
+									</vizData:FlattenedDataset>
+								</viz:dataset>
+								
+								<viz:feeds>
+									<vizFeeds:FeedItem uid="primaryValues" type="Measure" values="Bookings count"/>
+									<vizFeeds:FeedItem uid="axisLabels" type="Dimension" values="Period"/>
+								</viz:feeds>
+                            </viz:VizFrame>
+						</content>
+					</ChartContainerContent>
+				</content>
+			</ChartContainer>
+
+			<ChartContainer
+				showFullScreen="true"
+				showPersonalization="false"
+				autoAdjustHeight="true"
+				showSelectionDetails="false"
+				showLegendButton="true"
+				title="------">
+
+				<dimensionSelectors>
+					<core:Fragment fragmentName="zhr237.fragment.ChartFilters" type="XML"/>
+				</dimensionSelectors>
+
+				<!-- <customIcons>
+					<core:Icon></core:Icon>
+				</customIcons> -->
+
+				<content>
+					<ChartContainerContent>
+						<content>
+							<viz:Popover id="popOverDepart"></viz:Popover>
+							<viz:VizFrame id="frameDepart"
+										  height="40rem" width="auto"
+							              uiConfig="{applicationSet:'fiori'}"
+										  vizProperties="{
+											plotArea:{
+												dataLabel:{visible: true},
+												drawingEffect: 'glossy'
+											},
+										  	title: {text : 'By department', visible : true},
+											valueAxis: { title: { text: 'Bookings count' } }
+										  }"
+										  vizType="stacked_column"
+										  >
+
+								<viz:dataset>
+									<vizData:FlattenedDataset id="datasetDepart" data="{chart>/_depart_items}">
+										<vizData:dimensions>
+											<vizData:DimensionDefinition name="Period" value="{chart>period}"/>
+										</vizData:dimensions>
+										
+										<vizData:measures>
+											<!-- <vizData:MeasureDefinition name="Bookings count" value="{chart>cnt}"/> -->
+										</vizData:measures>
+									</vizData:FlattenedDataset>
+								</viz:dataset>
+								
+								<viz:feeds>
+									<!-- <vizFeeds:FeedItem uid="valueAxis" type="Measure" values="Bookings count"/> -->
+									<vizFeeds:FeedItem uid="categoryAxis" type="Dimension" values="Period"/>
+								</viz:feeds>
+                            </viz:VizFrame>
+						</content>
+					</ChartContainerContent>
+				</content>
+			</ChartContainer>
+		</layout:contentAreas>
+	</layout:Splitter>
+
+</core:FragmentDefinition>

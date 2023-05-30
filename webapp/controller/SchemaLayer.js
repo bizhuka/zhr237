@@ -21,7 +21,6 @@ sap.ui.define([
 
         constructor: function (owner) {
             this.owner = owner
-            this.libs = new Libs()
 
             this._model = new sap.ui.model.json.JSONModel()
             this._model.setDefaultBindingMode(sap.ui.model.BindingMode.TwoWay);
@@ -215,7 +214,7 @@ sap.ui.define([
                 {
                     success: function (current_desk) {
                         current_desk = current_desk ? current_desk : fullCopy
-                        _this.libs.showMessage(`Desk ${current_desk.place_id} was successfully ${methodName}ed`)
+                        Libs.showMessage(`Desk ${current_desk.place_id} was successfully ${methodName}ed`)
                         _this._add1Desk(current_desk, true)
                         _this._model.updateBindings()
                     }
@@ -266,7 +265,7 @@ sap.ui.define([
                     }
                 })
             if (selectedArr.length < 2) {
-                this.libs.showMessage('Select more items', true)
+                Libs.showMessage('Select more items', true)
                 return
             }
 
@@ -275,14 +274,14 @@ sap.ui.define([
 
             const calc = calcX.deviation < 4 ? calcX : calcY.deviation < 4 ? calcY : false
             if (!calc) {
-                this.libs.showMessage('Deviation is too big', true)
+                Libs.showMessage('Deviation is too big', true)
             }
 
             for (let item of selectedArr) {
                 item[calc.field] = calc.mean
                 this.owner.getView().getModel().update(`/ZC_HR237_Place('${item.place_id}')`, item)
             }
-            this.libs.showMessage(`${selectedArr.length} items aligned`)
+            Libs.showMessage(`${selectedArr.length} items aligned`)
             this._graph.deselect()
         },
 

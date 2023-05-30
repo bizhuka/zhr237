@@ -18,7 +18,6 @@ sap.ui.define([
 
             onInit: function () {
                 this._setMessageParser()
-                this.libs = new Libs()
 
                 this.mainView = this.byId("main_view")
                 this.mainView.bindElement({
@@ -28,8 +27,8 @@ sap.ui.define([
                         dataReceived: function () {
                             this.userInfo = this.mainView.getBindingContext().getObject()
 
-                            this.byId("avatar_big").setSrc(this.libs.get_avatar_url(this.userInfo.pernr))
-                            this.byId("avatar_small").setSrc(this.libs.get_avatar_url(this.userInfo.pernr), 64)
+                            this.byId("avatar_big").setSrc(Libs.get_avatar_url(this.userInfo.pernr))
+                            this.byId("avatar_small").setSrc(Libs.get_avatar_url(this.userInfo.pernr), 64)
                         }.bind(this)
                     }
                 })
@@ -46,17 +45,32 @@ sap.ui.define([
                     case this.byId('guardTab'):
                         this._init_guard_tab()
                         return
+                    case this.byId('chartTab'):
+                        this._init_chart_tab()
+                        return
                 }
             },
 
             onStartDateChange: function () {
                 this.calendarBookingOverview.refresh_calendar()
+                this.mainView.getObjectBinding().refresh()
             },
 
             _init_guard_tab: function () {
+                sap.ui.core.BusyIndicator.show(0)
                 sap.ui.require(["zhr237/controller/GuardTab"], function (GuardTab) {
+                    sap.ui.core.BusyIndicator.hide()
                     if (!this._GuardTab)
                         this._GuardTab = new GuardTab(this)
+                }.bind(this));
+            },
+
+            _init_chart_tab: function () {
+                sap.ui.core.BusyIndicator.show(0)
+                sap.ui.require(["zhr237/controller/ChartTab"], function (ChartTab) {
+                    sap.ui.core.BusyIndicator.hide()
+                    if (!this._ChartTab)
+                        this._ChartTab = new ChartTab(this)
                 }.bind(this));
             },
 
@@ -78,8 +92,11 @@ sap.ui.define([
             },
 
             onEditDeskPosition: function (oEvent) {
+                sap.ui.core.BusyIndicator.show(0)
                 if (!this._schemaLayer)
                     this._schemaLayer = new SchemaLayer(this)
+                sap.ui.core.BusyIndicator.hide()
+                
                 this._schemaLayer.display(oEvent.getSource().getProperty('target'))
             },
 
@@ -107,7 +124,7 @@ sap.ui.define([
                             {
                                 success: function () {
                                     //const itemName = typeName === 'Place' ? 'Desk' : typeName
-                                    this.libs.showMessage.show(`${typeName} ${update_item[keyField]} was successfully ${methodName}ed`)
+                                    Libs.showMessage.show(`${typeName} ${update_item[keyField]} was successfully ${methodName}ed`)
                                 }.bind(this)
                             })
 
@@ -119,18 +136,15 @@ sap.ui.define([
                     this._NewBook = new NewBook(this)
 
                 // By default booking for tomorrow
-                const datum = this.libs.get_noon(new Date())
+                const datum = Libs.get_noon(new Date())
                 datum.setDate(datum.getDate() + 1)
 
                 this._NewBook.showDialog(this.userInfo, {
-                    pernr: this.userInfo.pernr,
                     datum: datum,
+                    pernr: this.userInfo.pernr,
                     layer_id: '-',
                     persa: '-',
-                    layer_text: 'Select Schema',
-                    name1: '',
-                    layer_address: '',
-                    place_id: ''
+                    layer_text: 'Select Schema'
                 })
             },
 
@@ -154,7 +168,7 @@ sap.ui.define([
             },
 
             showQrCode: function () {
-                window.open(this.libs.get_qr_code_url(this.userInfo.nearest_book_date, this.userInfo.pernr, 'SHOW_QR'))
+                window.open(Libs.get_qr_code_url(this.userInfo.nearest_book_date, this.userInfo.pernr, 'SHOW_QR'))
             },
 
         });

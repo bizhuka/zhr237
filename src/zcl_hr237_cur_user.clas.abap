@@ -22,7 +22,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_HR237_CUR_USER IMPLEMENTATION.
+CLASS zcl_hr237_cur_user IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -81,14 +81,12 @@ CLASS ZCL_HR237_CUR_USER IMPLEMENTATION.
     WHERE persa = @ms_info-persa.
 
     CHECK ls_0001-plans IS NOT INITIAL.
-    ms_info-department = zcl_hr_om_utilities=>find_hlevel( im_otype = 'S'
-                                                           im_objid = ls_0001-plans
-                                                           im_datum = mv_datum
-                                                           im_wegid = 'ZS-O-O'
-                                                           im_hlevel = 'DEPARTMENT' ).
-    SELECT SINGLE orgtx INTO @ms_info-department_txt
-    FROM zc_hr237_department
-    WHERE orgeh = @ms_info-department.
+    ms_info-department = zcl_hr237_dir_subo=>get_department(
+        iv_plans = ls_0001-plans
+        iv_datum = mv_datum ).
+
+    ms_info-department_txt = zcl_hr237_book=>get_long_text( iv_objid = ms_info-department
+                                                            iv_otype = 'O' ).
   ENDMETHOD.
 
 

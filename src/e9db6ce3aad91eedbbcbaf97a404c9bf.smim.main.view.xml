@@ -70,7 +70,7 @@
 		</headerContent>
 
 		<sections>
-			<ObjectPageSection titleUppercase="false" visible="{= ${is_worker} || ${is_manager} }"
+			<ObjectPageSection titleUppercase="false" visible="{= ${is_worker} || ${is_manager} || ${is_admin} }"
 			                   id="bookingTab">
 				<customAnchorBarButton>
 					<m:Button icon="sap-icon://check-availability"
@@ -161,6 +161,18 @@
 				</ObjectPageSubSection>
 			</ObjectPageSection>
 
+			<!-- Statistics -->
+			<ObjectPageSection id="chartTab"
+			                   titleUppercase="false" visible="{is_admin}">
+				<customAnchorBarButton>
+					<m:Button icon="sap-icon://business-objects-experience"
+					          text="Statistics"/>
+				</customAnchorBarButton>
+				<ObjectPageSubSection title="">
+					<m:VBox id="chartVBox"/>
+				</ObjectPageSubSection>
+			</ObjectPageSection>
+			
 			<!-- Settings -->
 			<ObjectPageSection titleUppercase="false" visible="{is_admin}">
 				<customAnchorBarButton>

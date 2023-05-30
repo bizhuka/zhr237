@@ -47,6 +47,9 @@ define view ZC_HR237_Booking as select from zdhr237_book
  association[0..*] to ZC_HR237_DIR_SUBO     as _Employees    on _Employees.admin = $projection.fake_uname 
  association[1..1] to ZC_HR237_QrCode       as _QrCode       on _QrCode.datum = $projection.datum
                                                             and _QrCode.pernr = $projection.pernr
+ association[1..1] to ZC_HR237_Chart        as _Chart        on _Chart.datum = $projection.datum
+                                                            and _Chart.pernr = $projection.pernr                                                           
+                                                  
 {
     @UI.lineItem: [{ position: 10, importance: #HIGH }]
     @UI.selectionField: [{ position: 10 }]
@@ -104,5 +107,6 @@ define view ZC_HR237_Booking as select from zdhr237_book
     _OrgAssignment,
     _CurrentUser,
     _Employees,
-    _QrCode
+    _QrCode,
+    _Chart
 }

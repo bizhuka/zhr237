@@ -24,6 +24,12 @@ CLASS zcl_hr237_book DEFINITION
 
       get_user_full_name IMPORTING iv_uname       TYPE syuname
                          RETURNING VALUE(rv_text) TYPE string,
+
+      get_long_text IMPORTING iv_objid            TYPE objec-objid
+                              iv_otype            TYPE objec-otype
+                              iv_subty            TYPE subty DEFAULT '0001'
+                              iv_datum            TYPE d DEFAULT sy-datum
+                    RETURNING VALUE(rv_long_text) TYPE string,
       check_is_already_exists IMPORTING is_insert_key   TYPE ts_update_key
                                         is_skip_key     TYPE ts_update_key OPTIONAL
                               RETURNING VALUE(rv_error) TYPE string.
@@ -34,8 +40,13 @@ ENDCLASS.
 
 
 
-CLASS ZCL_HR237_BOOK IMPLEMENTATION.
-
+CLASS zcl_hr237_book IMPLEMENTATION.
+  METHOD get_long_text.
+    rv_long_text = zcl_hr_om_utilities=>get_object_full_name( im_otype = iv_otype
+                                                              im_subty = iv_subty
+                                                              im_objid = iv_objid
+                                                              im_datum = iv_datum ).
+  ENDMETHOD.
 
   METHOD check_is_already_exists.
     SELECT pernr, place_id, datum, create_by, created_when INTO TABLE @DATA(lt_prev_booking)
@@ -113,10 +124,7 @@ CLASS ZCL_HR237_BOOK IMPLEMENTATION.
              datum    TYPE zc_hr237_booking-datum,
              layer_id TYPE zc_hr237_booking-layer_id, "  days count from datum <--- Key ?
            END OF ts_key.
-
-    ASSIGN ir_key->* TO FIELD-SYMBOL(<ls_key>).
-    CHECK sy-subrc = 0.
-    DATA(ls_key) = CORRESPONDING ts_key( <ls_key> ).
+    DATA(ls_key) = CORRESPONDING ts_key( is_filter ).
 
     " Calendar view sends the Pernr 77777777 to distinguish other requests
     CHECK ls_key-pernr = 77777777

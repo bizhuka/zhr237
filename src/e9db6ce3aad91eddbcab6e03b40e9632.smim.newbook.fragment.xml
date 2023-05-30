@@ -2,11 +2,12 @@
 		xmlns="sap.m"
 		xmlns:l="sap.ui.layout"
 		xmlns:f="sap.ui.layout.form"
-		xmlns:core="sap.ui.core">
+		xmlns:core="sap.ui.core"
+		xmlns:smartField="sap.ui.comp.smartfield">
 
 	<Dialog title="{book>/layer_text} ({book>/layer_id}) - {book>/name1} ({book>/persa})" afterOpen="_onAfterDialogOpen">
 		<buttons>
-			<Button text="{= ${book>/_edit_callback} ? 'Change': 'Book'}" type="Emphasized" press="handleActionButton"/>
+			<Button text="{= ${book>/_change} ? 'Change': 'Create'}" type="Emphasized" press="handleActionButton"/>
 			<Button text="Cancel" press="handleEditCancelButton"/>
 		</buttons>
 
@@ -37,15 +38,27 @@
 				    <core:Item key="{layer_id}" text="{layer_id} - {layer_text}" />
 			    </ComboBox>
 				
-                <Label text="Employee" visible="{book>/is_manager}"/>
+                <Label text="Employee" visible="{book>/is_super_user}"/>
+				<!-- ZC_HR237_DIR_SUBO -->
 				<ComboBox                
                     id="id_new_book_pernr"
                     selectedKey="{book>/pernr}"
 					required="true"
-                    items="{/ZC_HR237_DIR_SUBO}"
-                    visible="{book>/is_manager}">
-				    <core:Item key="{pernr}" text="{pernr} - {full_name}" />
+                    items="{path : '/ZC_HR237_OrgAssignment', length: '3333'}"					 
+                    visible="{book>/is_super_user}">
+				    <core:Item key="{pernr}" text="{pernr} - {ename}" />
 			    </ComboBox>
+				<!-- <Input  id="id_pernr_4_booking"
+						value="{book>/pernr}"
+						required="true"
+					    placeholder="Enter Personnel Number"
+						showSuggestion="true"
+						suggestionItems="{/ZC_HR237_OrgAssignment}">
+						<suggestionItems>
+							<core:ListItem text="{pernr}" additionalText="{ename}" />
+						</suggestionItems>			
+				</Input> -->
+									   
 
 				<Label text="Desk"/>
                 <HBox width="100%">
