@@ -20,11 +20,20 @@
         "uri": "/sap/opu/odata/sap/ZC_HR237_BOOKING_CDS/",
         "type": "OData",
         "settings": {
-          "annotations": [],
+          "annotations": [ "annotation" ],
           "localUri": "localService/metadata.xml",
           "odataVersion": "2.0"
         }
+      },
+
+      "annotation": {
+        "type": "ODataAnnotation",
+        "uri": "annotations/annotation.xml",
+        "settings": {
+          "localUri": "annotations/annotation.xml"
+        }
       }
+
     }
   },
   "sap.ui": {

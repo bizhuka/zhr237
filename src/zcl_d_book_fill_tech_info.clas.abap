@@ -29,8 +29,9 @@ CLASS ZCL_D_BOOK_FILL_TECH_INFO IMPLEMENTATION.
                 iv_fill_data  = abap_true
       IMPORTING et_data       = lt_booking ).
 
+    DATA(ls_user_info) = NEW zcl_hr237_cur_user( )->ms_info.
     LOOP AT lt_booking ASSIGNING FIELD-SYMBOL(<ls_booking>).
-      <ls_booking>-create_by = sy-uname.
+      <ls_booking>-create_by = ls_user_info-uname.
       GET TIME STAMP FIELD <ls_booking>-created_when.
 
       io_modify->update( iv_node           = is_ctx-node_key

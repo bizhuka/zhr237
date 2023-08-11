@@ -7,11 +7,9 @@ sap.ui.define([
     // "zhr237/controller/FormPlace",
     "zhr237/controller/NewBook",
     "zhr237/controller/CalendarBookingOverview",
-
-    "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator",
+    "zhr237/controller/NotifyAll",
 ],
-    function (Libs, Controller, SchemaLayer, FormLayer, NewBook, CalendarBookingOverview, Filter, FilterOperator) {
+    function (Libs, Controller, SchemaLayer, FormLayer, NewBook, CalendarBookingOverview, NotifyAll) {
         "use strict";
 
         return Controller.extend("zhr237.controller.Main", {
@@ -36,6 +34,66 @@ sap.ui.define([
                 this.calendarBookingOverview = new CalendarBookingOverview(this)
             },
 
+
+            onPick1Desk: function (oEvent) {
+                const pickDeskButton = oEvent.getSource()
+                pickDeskButton.setPressed(false)
+                this.pickedDesk = null
+
+                if (pickDeskButton.getText()) {
+                    pickDeskButton.setText('')
+                    this.onStartDateChange()
+                    return
+                }
+
+                this.onBookClick({
+                    pickModeCallback: function (pickedDesk) {
+                        pickDeskButton.setPressed(true)
+                        pickDeskButton.setText(pickedDesk.place_id)
+
+                        this.pickedDesk = pickedDesk
+
+                        this.onStartDateChange()
+                        Libs.showMessage(`Click on day in calendar to set ${pickedDesk.place_id} desk`)
+                    }.bind(this)
+                })
+            },
+
+            handleIntervalSelect: function (oEvent) {
+                if (!this.pickedDesk)
+                    return
+                const item = oEvent.mParameters.row.getBindingContext('calendar').getObject()
+
+                const newBooking = {
+                    datum: Libs.get_middle(oEvent.mParameters.startDate, oEvent.mParameters.endDate),
+                    place_id: this.pickedDesk.place_id,
+                    pernr: item.pernr,
+                }
+
+                this.createOrEdit(newBooking)
+            },
+
+            createOrEdit: function (newBooking, edit, callBack) {
+                this.getView().getModel().create(edit ? '/ZC_HR237_A_Edit_Booking' : '/ZC_HR237_Booking',
+                    newBooking,
+                    {
+                        success: function (booking) {
+                            const sendNotif = !this.userInfo.is_manager
+                            if (sendNotif)
+                                Libs.send_request(Libs.get_base_url() + `ZC_HR237_A_Send_Notif(datum=datetime'${Libs.getDateIso(booking.datum)}T00:00:00',pernr='${booking.pernr}')/$value`)
+
+                            Libs.showMessage(
+                                `Desk ${booking.place_text} booked for ${Libs.date_to_text(booking.datum)}` +
+                                (sendNotif ? `\nNotification to ${booking.ename} via email is sent` : ''))
+
+                            this.onStartDateChange()
+
+                            if (callBack)
+                                callBack()
+                        }.bind(this)
+                    })
+            },
+
             onSectionChange: function (oEvent) {
                 switch (oEvent.getParameter('section')) {
 
@@ -48,7 +106,22 @@ sap.ui.define([
                     case this.byId('chartTab'):
                         this._init_chart_tab()
                         return
+                    case this.byId('notifTab'):
+                        NotifyAll.init_notif_tab(this)
+                        return
                 }
+            },
+
+            onNotifyAll: function () {
+                NotifyAll.send(this)
+            },
+
+            showScheduleReport: function () {
+                this.calendarBookingOverview.showScheduleReport()
+            },
+
+            onBeforeRebindNotifyAllTable: function (oEvent) {
+                NotifyAll.onBeforeRebindNotifyAllTable(oEvent)
             },
 
             onStartDateChange: function () {
@@ -96,7 +169,7 @@ sap.ui.define([
                 if (!this._schemaLayer)
                     this._schemaLayer = new SchemaLayer(this)
                 sap.ui.core.BusyIndicator.hide()
-                
+
                 this._schemaLayer.display(oEvent.getSource().getProperty('target'))
             },
 
@@ -131,7 +204,7 @@ sap.ui.define([
                     }.bind(this))
             },
 
-            onBookClick: function () {
+            onBookClick: function (oEvent) {
                 if (!this._NewBook)
                     this._NewBook = new NewBook(this)
 
@@ -144,7 +217,8 @@ sap.ui.define([
                     pernr: this.userInfo.pernr,
                     layer_id: '-',
                     persa: '-',
-                    layer_text: 'Select Schema'
+                    layer_text: 'Select Schema',
+                    pickModeCallback: oEvent.pickModeCallback
                 })
             },
 
@@ -168,7 +242,7 @@ sap.ui.define([
             },
 
             showQrCode: function () {
-                window.open(Libs.get_qr_code_url(this.userInfo.nearest_book_date, this.userInfo.pernr, 'SHOW_QR'))
+                window.open(Libs.get_base_url() + `ZC_HR237_A_Show_Ticket(datum=datetime'${Libs.getDateIso(this.userInfo.nearest_book_date)}T00:00:00',pernr='${this.userInfo.pernr}')/$value`)
             },
 
         });

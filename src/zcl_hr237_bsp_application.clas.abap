@@ -22,7 +22,7 @@ CLASS ZCL_HR237_BSP_APPLICATION IMPLEMENTATION.
     cl_http_ext_webapp=>create_url_for_bsp_application(
      EXPORTING bsp_application      = '/sap/zhr237/webapp/index.html'
                bsp_start_page       = ''
-               bsp_start_parameters = VALUE #( "( name = 'uname'      value = sy-uname )
+               bsp_start_parameters = VALUE #( "( name = 'uname'      value = NEW zcl_hr237_cur_user( )->ms_info-uname )
                                                ( name = 'sap-client' value = sy-mandt )  )
      IMPORTING abs_url              = rv_url ).
   ENDMETHOD.

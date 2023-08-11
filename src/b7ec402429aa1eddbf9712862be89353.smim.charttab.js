@@ -88,9 +88,11 @@ sap.ui.define([
 			for (let item of items)
 				this._chart._dynamics.push({
 					period: item.period,
+					period_raw: item.period_raw,
 					cnt: Number(item.cnt),
 					target_cnt: Number(item.target_cnt)
 				})
+			this._chart._dynamics.sort((a, b) => a.period_raw > b.period_raw ? 1 : -1)
 
 			this._setMaxCapacityLine('frameDynamics', items)
 		},
@@ -100,7 +102,8 @@ sap.ui.define([
 			const unqItems = {}
 			for (const item of items) {
 				const updateLine = unqItems[item.period] ? unqItems[item.period] : {
-					period: item.period
+					period: item.period,
+					period_raw: item.period_raw
 				}
 				unqItems[item.period] = updateLine
 
@@ -109,6 +112,7 @@ sap.ui.define([
 				unqDepart[name] = item.department_txt
 			}
 			this._chart._depart_items = Object.values(unqItems)
+			this._chart._depart_items.sort((a, b) => a.period_raw > b.period_raw ? 1 : -1)
 
 			// Delete previous feeds
 			const frameDepart = this.owner.getView().byId('frameDepart')
@@ -144,7 +148,7 @@ sap.ui.define([
 					new Filter("department", FilterOperator.EQ, this._chart._orgeh_filter)],
 
 				urlParameters: {
-					"$select": "cnt,period,department,department_txt,chart_kind,target_cnt"
+					"$select": "cnt,period,department,department_txt,chart_kind,target_cnt,period_raw"
 				},
 
 				success: function (data) {

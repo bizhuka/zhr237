@@ -20,7 +20,7 @@
                      text="{item>/chooseText}"
                      enabled="{item>/chooseEnabled}"/>
            <m:Button text="Cancel" press="handleEditCancelButton"/>
-           <m:Button text="Align" press="_doAlign" visible="{= ${item>/is_localhost} &amp;&amp; ${item>/editMode}}"/>
+           <m:Button text="Align" press="_doAlign" visible="{= ${item>/editMode}}"/>
         </m:buttons>
 		<!-- <l:VerticalLayout class="sapUiContentPadding"> -->
 

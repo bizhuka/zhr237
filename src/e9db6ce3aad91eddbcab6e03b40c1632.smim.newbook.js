@@ -33,15 +33,19 @@ sap.ui.define([
             this._book.minDate = Libs.get_date_from_now(userInfo.min_date)
             this._book.maxDate = Libs.get_date_from_now(userInfo.max_date)
 
-            this._book.is_super_user = userInfo.is_manager || userInfo.is_admin
+            this._book.is_admin = userInfo.is_admin
+            this._book.is_manager = userInfo.is_manager && !userInfo.is_admin
 
             this.layerCombobox = sap.ui.getCore().byId('id_new_layer_id')
             this.pernrCombobox = sap.ui.getCore().byId('id_new_book_pernr')
             this.desksCombobox = sap.ui.getCore().byId('id_new_book_desk')
 
-            this.layerCombobox.setSelectedKey(null)
-            this.desksCombobox.setSelectedKey(null)
-            if (this._book.is_super_user)
+            if (!this._book._change) {
+                this.layerCombobox.setSelectedKey(null)
+                this.desksCombobox.setSelectedKey(null)
+            }
+
+            if (!this._book._change && (userInfo.is_manager || userInfo.is_admin))
                 this.pernrCombobox.setSelectedKey(null)
 
             // Show what available
@@ -51,6 +55,25 @@ sap.ui.define([
 
             this._model.updateBindings()
             this._dialog.open()
+
+            if (this._book._change) {
+                this.layerCombobox.setSelectedKey(this._book.layer_id)
+                this._on_schema_combobox_changed({
+                    oSource: this.layerCombobox,
+                    _layerObject: this.owner.getView().getModel().getProperty(`/ZC_HR237_Layer('${this._book.layer_id}')`)
+                })
+            }
+        },
+
+        _onAfterDialogOpen: function () {
+            if (this.previous_values.pickModeCallback)
+                return
+
+            const nPernr = this._book._change ? this._book.pernr : ''
+
+            // Always null value
+            sap.ui.getCore().byId("id_pernr_4_booking").setValue(nPernr)
+            sap.ui.getCore().byId("id_pernr_4_booking-input").setValue(nPernr)
         },
 
         _update_bindings: function () {
@@ -81,30 +104,48 @@ sap.ui.define([
             })
         },
 
+        pernrSelectedByCombo: function (oEvent) {
+            if (!oEvent.getSource().getSelectedKey()) return
+
+            const src = oEvent.getSource().getSelectedItem().getBindingContext().getObject()
+            this._book.pernr = src.pernr
+            this._book.department = src.department
+
+            this._update_bindings()
+        },
+
+        pernrSelectedByF4: function (oEvent) {
+            this._book.pernr = oEvent.getParameter('value')
+            this._book.department = this.owner.getView().getModel().getProperty(`/ZC_HR237_OrgAssignment('${this._book.pernr}')`).department
+
+            this._update_bindings()
+        },
+
         _make_default_filter: function (oFilter) {
             const result = oFilter ? [oFilter] : []
 
             if (this._book.layer_address)
                 result.push(new Filter("layer_id", FilterOperator.EQ, this._book.layer_id))
 
-            const selectedPernr = this.pernrCombobox.getSelectedItem()
-            const department = selectedPernr ?
-                selectedPernr.getBindingContext().getObject().department :
-                this.userInfo.department
-            result.push(new Filter("department", FilterOperator.EQ, department))
+            const department = this._book.department ?
+                this._book.department :
+                this._book.is_admin ? null : this.userInfo.department
+            if (department)
+                result.push(new Filter("department", FilterOperator.EQ, department))
 
             return result
         },
 
         _on_schema_combobox_changed: function (oEvent) {
-            if (!oEvent.getSource().getSelectedKey()) return
+            if (!oEvent.oSource.getSelectedKey()) return
 
-            const src = oEvent.getParameter('selectedItem').getBindingContext().getObject()
+            const src = oEvent._layerObject ? oEvent._layerObject : oEvent.oSource.getSelectedItem().getBindingContext().getObject()
             this._book.layer_id = src.layer_id
             this._book.layer_text = src.layer_text
             this._book.layer_address = src.layer_address
             this._book.persa = src.persa
             this._book.name1 = src.name1
+
             this._update_bindings()
         },
 
@@ -118,16 +159,21 @@ sap.ui.define([
         handleActionButton: function () {
             const newBooking = {
                 datum: Libs.get_noon(this._book.datum),
-                pernr: this.pernrCombobox.getSelectedKey(),
-                place_id: this.desksCombobox.getSelectedKey()
+                place_id: this.desksCombobox.getSelectedKey(),
+                pernr: this.previous_values.pickModeCallback ? this._book.layer_address : this._book.pernr,
             }
-
-            console.log(newBooking)
-            console.log(this.desksCombobox.getValue())
-            console.log(this.desksCombobox.getSelectedItem())
 
             if (!newBooking.pernr || !newBooking.place_id || !this._book.datum) {
                 Libs.showMessage('Fill all required fields', true)
+                return
+            }
+
+            if (this.previous_values.pickModeCallback) {
+                this.previous_values.pickModeCallback({
+                    place_id: newBooking.place_id,
+                    persa: this._book.persa
+                })
+                this._dialog.close()
                 return
             }
 
@@ -136,20 +182,10 @@ sap.ui.define([
                 newBooking.pernr_prev = this.previous_values.pernr
                 newBooking.place_id_prev = this.previous_values.place_id
             }
-            this.owner.getView().getModel().create(this._book._change ? '/ZC_HR237_QrCode' : '/ZC_HR237_Booking',
-                newBooking,
-                {
-                    success: function (booking) {
-                        Libs.send_request(Libs.get_qr_code_url(booking.datum, booking.pernr, 'NOTIFY'))
-
-                        Libs.showMessage(
-                            `Desk ${booking.place_text} booked for ${Libs.date_to_text(booking.datum)}\n` +
-                            `Notification to ${booking.ename} via email is sent`)
-
-                        this.owner.onStartDateChange()
-                        this._dialog.close()
-                    }.bind(this)
-                })
+            
+            this.owner.createOrEdit(newBooking, this._book._change, function(){
+                this._dialog.close()
+            }.bind(this))
         },
 
         onShowMap: function () {
@@ -183,13 +219,7 @@ sap.ui.define([
 
         handleEditCancelButton: function () {
             this._dialog.close()
-        },
-
-        initPernr: function(oEvent){
-            sap.ui.getCore().byId("id_pernr").setValue(this._book.pernr)
-            sap.ui.getCore().byId("id_pernr-input").setValue(this._book.pernr)
         }
-
     });
 }
 );

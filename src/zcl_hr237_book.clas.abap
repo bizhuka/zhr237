@@ -6,7 +6,6 @@ CLASS zcl_hr237_book DEFINITION
   PUBLIC SECTION.
 
     INTERFACES:
-      zif_sadl_exit,
       zif_sadl_mpc,
       zif_sadl_read_runtime.
 
@@ -18,35 +17,22 @@ CLASS zcl_hr237_book DEFINITION
       END OF ts_update_key.
 
     CLASS-METHODS:
-      get_it_0001 IMPORTING iv_pernr       TYPE pernr-pernr
-                            iv_datum       TYPE d
-                  RETURNING VALUE(rs_0001) TYPE p0001,
-
-      get_user_full_name IMPORTING iv_uname       TYPE syuname
-                         RETURNING VALUE(rv_text) TYPE string,
-
-      get_long_text IMPORTING iv_objid            TYPE objec-objid
-                              iv_otype            TYPE objec-otype
-                              iv_subty            TYPE subty DEFAULT '0001'
-                              iv_datum            TYPE d DEFAULT sy-datum
-                    RETURNING VALUE(rv_long_text) TYPE string,
       check_is_already_exists IMPORTING is_insert_key   TYPE ts_update_key
                                         is_skip_key     TYPE ts_update_key OPTIONAL
                               RETURNING VALUE(rv_error) TYPE string.
-
-  PROTECTED SECTION.
   PRIVATE SECTION.
+
+    METHODS:
+      _fill_direct_subordinates IMPORTING it_pernr  TYPE cchry_pernr_range
+                                          iv_persa  TYPE p0001-werks
+                                CHANGING  ct_result TYPE STANDARD TABLE,
+      _fill_texts CHANGING  ct_result   TYPE STANDARD TABLE.
 ENDCLASS.
 
 
 
-CLASS zcl_hr237_book IMPLEMENTATION.
-  METHOD get_long_text.
-    rv_long_text = zcl_hr_om_utilities=>get_object_full_name( im_otype = iv_otype
-                                                              im_subty = iv_subty
-                                                              im_objid = iv_objid
-                                                              im_datum = iv_datum ).
-  ENDMETHOD.
+CLASS ZCL_HR237_BOOK IMPLEMENTATION.
+
 
   METHOD check_is_already_exists.
     SELECT pernr, place_id, datum, create_by, created_when INTO TABLE @DATA(lt_prev_booking)
@@ -69,33 +55,12 @@ CLASS zcl_hr237_book IMPLEMENTATION.
 
     rv_error = |Desk '{ <ls_prev_booking>-place_id }' on a date { <ls_prev_booking>-datum DATE = USER } already booked for {
 
-             zcl_hr237_book=>get_it_0001(
+             zcl_hr237_assist=>get_it_0001(
                  iv_pernr = <ls_prev_booking>-pernr
                  iv_datum = <ls_prev_booking>-datum )-ename } by {
 
-             zcl_hr237_book=>get_user_full_name( <ls_prev_booking>-create_by )
+             zcl_hr237_assist=>get_user_full_name( <ls_prev_booking>-create_by )
                  } at { lv_when_date DATE = USER } { lv_when_time TIME = USER }|.
-  ENDMETHOD.
-
-
-  METHOD get_it_0001.
-    rs_0001 = CAST p0001( zcl_hr_read=>infty_row(
-        iv_infty   = '0001'
-        iv_pernr   = iv_pernr
-        iv_begda   = iv_datum
-        iv_endda   = iv_datum
-        is_default = VALUE p0001( )
-        iv_no_auth = 'X'
-        ) )->*.
-  ENDMETHOD.
-
-
-  METHOD get_user_full_name.
-    CHECK iv_uname IS NOT INITIAL.
-    SELECT SINGLE name_textc INTO rv_text
-    FROM user_addr
-    WHERE bname = iv_uname " ##WARN_OK  backward compatibility
-    .
   ENDMETHOD.
 
 
@@ -106,10 +71,23 @@ CLASS zcl_hr237_book IMPLEMENTATION.
     lo_entity->get_property( 'layer_id' )->set_as_content_type( ).
 
     " PDF with QR code
-    lo_entity = io_model->get_entity_type( 'ZC_HR237_QrCodeType' ).
+    lo_entity = io_model->get_entity_type( 'ZC_HR237_A_Show_TicketType' ).
     lo_entity->set_is_media( abap_true ).
     lo_entity->get_property( 'datum' )->set_as_content_type( ).
     lo_entity->get_property( 'pernr' )->set_as_content_type( ).
+
+    lo_entity = io_model->get_entity_type( 'ZC_HR237_A_Send_NotifType' ).
+    lo_entity->set_is_media( abap_true ).
+    lo_entity->get_property( 'datum' )->set_as_content_type( ).
+    lo_entity->get_property( 'pernr' )->set_as_content_type( ).
+
+    lo_entity = io_model->get_entity_type( 'ZC_HR237_A_Edit_BookingType' ).
+    lo_entity->set_is_media( abap_true ).
+    lo_entity->get_property( 'client' )->set_as_content_type( ).
+
+    lo_entity = io_model->get_entity_type( 'ZC_HR237_A_Schedule_ReportType' ).
+    lo_entity->set_is_media( abap_true ).
+    lo_entity->get_property( 'begda' )->set_as_content_type( ).
 
     " Change SH to dropboxes
     DATA(lc_fixed_values) = /iwbep/if_mgw_odata_property=>gcs_value_list_type_property-fixed_values.
@@ -119,32 +97,108 @@ CLASS zcl_hr237_book IMPLEMENTATION.
 
 
   METHOD zif_sadl_read_runtime~execute.
-    TYPES: BEGIN OF ts_key,
-             pernr    TYPE zc_hr237_booking-pernr,
-             datum    TYPE zc_hr237_booking-datum,
-             layer_id TYPE zc_hr237_booking-layer_id, "  days count from datum <--- Key ?
-           END OF ts_key.
-    DATA(ls_key) = CORRESPONDING ts_key( is_filter ).
+    TYPES: BEGIN OF ts_filter,
+             pernr                TYPE zc_hr237_booking-pernr,
+             datum                TYPE zc_hr237_booking-datum,
+             filter_days_count    TYPE zc_hr237_booking-filter_days_count,
+*             filter_show_dir_subo TYPE zc_hr237_booking-filter_show_dir_subo,
+             persa                TYPE zc_hr237_booking-persa,
+           END OF ts_filter.
+    DATA(ls_filter) = CORRESPONDING ts_filter( is_filter ).
 
     " Calendar view sends the Pernr 77777777 to distinguish other requests
-    CHECK ls_key-pernr = 77777777
-      AND ct_data_rows[] IS INITIAL.
+    IF ls_filter-pernr <> 77777777 OR ct_data_rows[] IS NOT INITIAL.
+      _fill_texts( CHANGING ct_result = ct_data_rows ).
+      RETURN.
+    ENDIF.
 
-    DATA(ls_range) = VALUE zcl_hr_month=>ts_range( begda = ls_key-datum
-                                                   endda = ls_key-datum + ls_key-layer_id ).
+    DATA(ls_range) = VALUE zcl_hr_month=>ts_range( begda = ls_filter-datum
+                                                   endda = ls_filter-datum + ls_filter-filter_days_count ).
 
-    DATA(lt_pernrs) = zcl_hr237_dir_subo=>get_direct_subordinates( ).
-    CHECK lt_pernrs[] IS NOT INITIAL.
+    DATA(lo_cur_user) = NEW zcl_hr237_cur_user( )->fill_roles_info( ).
+    " All pernrs
+    IF lo_cur_user->ms_info-is_admin <> abap_true.
+      DATA(lt_pernrs) = VALUE cchry_pernr_range( FOR lv_pernr IN zcl_hr237_assist=>get_direct_subordinates( )
+        ( sign = 'I' option = 'EQ' low = lv_pernr )
+      ).
+      CHECK lt_pernrs[] IS NOT INITIAL.
+    ENDIF.
 
-    SELECT datum, pernr, ename, user_name, created_when,
-           layer_id, layer_text, persa,
+    SELECT datum, pernr, ename, user_name, created_when, is_notified,
+           layer_id, layer_text, persa, department,
            place_id, place_text INTO TABLE @DATA(lt_bookings)
     FROM zc_hr237_booking
-    FOR ALL ENTRIES IN @lt_pernrs
-    WHERE pernr = @lt_pernrs-table_line
+    WHERE pernr IN @lt_pernrs
       AND datum BETWEEN @ls_range-begda AND @ls_range-endda.
 
+    IF ls_filter-persa IS NOT INITIAL.
+      DELETE lt_bookings WHERE persa <> ls_filter-persa.
+    ENDIF.
     ct_data_rows = CORRESPONDING #( lt_bookings ).
+
+    IF lo_cur_user->ms_info-is_manager = abap_true. " ls_filter-filter_show_dir_subo = abap_true.
+      _fill_direct_subordinates( EXPORTING it_pernr  = lt_pernrs
+                                           iv_persa  = ls_filter-persa
+                                 CHANGING  ct_result = ct_data_rows ).
+    ENDIF.
+
+
+    SORT ct_data_rows:        BY ('PERNR').
+*                       STABLE BY ('DATUM'). " Earlier first
+    lo_cur_user->set_own_pernr_first( CHANGING ct_result = ct_data_rows ).
+
+    _fill_texts( CHANGING ct_result = ct_data_rows ).
+
 *    cv_number_all_hits = lines( ct_data_rows ).
+  ENDMETHOD.
+
+
+  METHOD _fill_direct_subordinates.
+    DATA(lv_datum) = sy-datum.
+
+    LOOP AT it_pernr ASSIGNING FIELD-SYMBOL(<ls_pernr>).
+      DATA(lv_pernr) = <ls_pernr>-low.
+
+      READ TABLE ct_result TRANSPORTING NO FIELDS
+       WITH KEY ('PERNR') = lv_pernr.
+      CHECK sy-subrc <> 0.
+
+      DATA(ls_0001) = zcl_hr237_assist=>get_it_0001(
+         iv_pernr = lv_pernr
+         iv_datum = lv_datum ).
+      IF iv_persa IS NOT INITIAL.
+        CHECK ls_0001-werks = iv_persa.
+      ENDIF.
+
+      APPEND INITIAL LINE TO ct_result ASSIGNING FIELD-SYMBOL(<ls_row>).
+      DATA(ls_row) = VALUE zc_hr237_booking(
+        pernr = lv_pernr
+        datum = '99991231'
+      ).
+
+      ls_row-ename = ls_0001-ename.
+      ls_row-persa = ls_0001-werks.
+
+      ls_row-department = zcl_hr237_assist=>get_department(
+        iv_plans = ls_0001-plans
+        iv_datum = lv_datum ).
+
+      MOVE-CORRESPONDING ls_row TO <ls_row>.
+    ENDLOOP.
+  ENDMETHOD.
+
+
+  METHOD _fill_texts.
+    LOOP AT ct_result ASSIGNING FIELD-SYMBOL(<ls_row>).
+      DATA(ls_row) = CORRESPONDING zc_hr237_booking( <ls_row> ).
+
+      ls_row-persa_txt = zcl_hr237_assist=>get_long_text( iv_objid = ls_row-persa
+                                                          iv_otype = 'A' ).
+
+      ls_row-department_txt = zcl_hr237_assist=>get_long_text( iv_objid = ls_row-department
+                                                               iv_otype = 'O' ).
+
+      MOVE-CORRESPONDING ls_row TO <ls_row>.
+    ENDLOOP.
   ENDMETHOD.
 ENDCLASS.

@@ -12,7 +12,6 @@ sap.ui.define([
     return Object.extend("zhr237.controller.SchemaLayer", {
         owner: null,
         _item: {
-            is_localhost: window.location.hostname === 'localhost',
             title: "",
             editMode: false,
             nodes: [],
@@ -28,7 +27,7 @@ sap.ui.define([
         },
 
         display: function (target, ext) {
-            this.ext = ext ? ext: {}
+            this.ext = ext ? ext : {}
 
             const params = target.split('^')
             const layer_id = params[0]
@@ -106,7 +105,7 @@ sap.ui.define([
                     // Direct url do not work
                     const url_with_$ = `${window.location.origin}/sap/opu/odata/sap/ZC_HR237_BOOKING_CDS/ZC_HR237_Layer('${layer_id}')/`
                         + encodeURIComponent("$value") // + '?ok.png'
-                    this.toDataURL(url_with_$, function(result){
+                    this.toDataURL(url_with_$, function (result) {
                         this._graph.setBackgroundImage(result)
                     }.bind(this))
 
@@ -272,10 +271,11 @@ sap.ui.define([
             const calcX = this.getStandardDeviation(selectedArr, "place_x")
             const calcY = this.getStandardDeviation(selectedArr, "place_y")
 
-            const calc = calcX.deviation < 4 ? calcX : calcY.deviation < 4 ? calcY : false
-            if (!calc) {
+            if (calcX.deviation >= 7 && calcY.deviation >= 7) {
                 Libs.showMessage('Deviation is too big', true)
+                return
             }
+            const calc = calcX.deviation > calcY.deviation ? calcY : calcX            
 
             for (let item of selectedArr) {
                 item[calc.field] = calc.mean

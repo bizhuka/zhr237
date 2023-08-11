@@ -2,6 +2,7 @@
           displayBlock="true"
           xmlns="sap.uxap"
           xmlns:m="sap.m"
+		  xmlns:table="sap.ui.table"
           xmlns:mvc="sap.ui.core.mvc"
           xmlns:l="sap.ui.layout"
           xmlns:unified="sap.ui.unified"
@@ -85,11 +86,22 @@
 							startDateChange="onStartDateChange"
 							appointmentsVisualization="Filled"
 							showEmptyIntervalHeaders="true"
-							appointmentSelect="handleAppointmentSelect">
+							appointmentSelect="handleAppointmentSelect"
+							intervalSelect="handleIntervalSelect">
 
-							<m:toolbarContent>
-								<m:Button text="Create" press=".onBookClick($event, true)" tooltip="Create new booking" />
-								<!-- <m:Button icon="sap-icon://legend" press="openLegend" ariaHasPopup="Dialog" /> -->
+							<m:toolbarContent>							
+							   <m:ToolbarSpacer width="1rem"/>
+								
+								<m:Button text="Create" press=".onBookClick($event, true)" tooltip="Create new booking" />								
+								<!-- <m:Switch id="id_show_dir_subo" tooltip="Show Direct Subordinates" change="onStartDateChange" visible="{is_manager}"/> -->
+								<m:ToggleButton icon="sap-icon://desktop-mobile" press="onPick1Desk" visible="{is_manager}" tooltip="Pick one desk"/>
+								<m:ToolbarSpacer  width="2rem" visible="{is_manager}"/>
+
+
+								<m:ComboBox id="id_pers_area_filter" items="{/ZC_PY000_PersonnelArea}" width="10rem" visible="{is_manager}" selectionChange="onStartDateChange">
+									<core:Item key="{persa}" text="{name1}" />
+								</m:ComboBox>
+								<m:Button icon="sap-icon://excel-attachment" text="Schedule" press="showScheduleReport" visible="{is_manager}"/>
 							</m:toolbarContent> 
 
 							<m:views>						    
@@ -150,7 +162,6 @@
 					                       showRowCount="true"
 					                       useExportToExcel="false"
 					                       tableType="ResponsiveTable"
-					                       enableAutoBinding="true"
 					                       useTablePersonalisation="false">
 									<smartTable:customToolbar>
 										<m:OverflowToolbar id="idCheckBookingToolbar" design="Transparent">
@@ -163,7 +174,7 @@
 
 			<!-- Statistics -->
 			<ObjectPageSection id="chartTab"
-			                   titleUppercase="false" visible="{is_admin}">
+			                   titleUppercase="false" visible="{= ${is_admin} || ${is_manager} }">
 				<customAnchorBarButton>
 					<m:Button icon="sap-icon://business-objects-experience"
 					          text="Statistics"/>
@@ -173,6 +184,82 @@
 				</ObjectPageSubSection>
 			</ObjectPageSection>
 			
+
+			<!-- Notifications -->
+			<ObjectPageSection id="notifTab"
+			                   titleUppercase="false" visible="{= ${is_manager} }">
+				<customAnchorBarButton>
+					<m:Button icon="sap-icon://letter"
+					          text="Notifications"/>
+				</customAnchorBarButton>
+				<ObjectPageSubSection title="">
+					<m:VBox>
+						<smartFilterBar:SmartFilterBar id="idNotifyAllFilter" 
+							entitySet="ZC_HR237_A_Send_Notif_All" enableBasicSearch="true" showClearOnFB="true" liveMode="true" showMessages="true"
+														          useToolbar="false">
+							<smartFilterBar:layoutData>
+								<m:FlexItemData shrinkFactor="1"/>
+							</smartFilterBar:layoutData>
+							
+							<smartFilterBar:controlConfiguration>							
+                            	<smartFilterBar:ControlConfiguration key="datum" mandatory="mandatory" filterType="interval" visibleInAdvancedArea="true"  index="1"
+										conditionType="{
+											module: 'sap.ui.comp.config.condition.DateRangeType',
+											defaultOperation: 'THISMONTH'
+										}"/>
+								<smartFilterBar:ControlConfiguration key="layer_id" mandatory="notMandatory" filterType="single"/>
+
+								<smartFilterBar:ControlConfiguration key="custIsNotified" index="2" label="With notified">
+									<smartFilterBar:customControl>
+										<!-- change="onSwitchNotified" -->
+										<m:Switch id="id_is_notified"/>
+									</smartFilterBar:customControl>
+								</smartFilterBar:ControlConfiguration>
+                        	</smartFilterBar:controlConfiguration>
+						</smartFilterBar:SmartFilterBar>
+
+						<smartTable:SmartTable
+								id="idNotifyAllTable"
+								smartFilterId="idNotifyAllFilter"
+								entitySet="ZC_HR237_A_Send_Notif_All" 
+								header="Bookings in period"
+								requestAtLeastFields="department,plans,is_notified"
+								initiallyVisibleFields="datum,directorate_txt,department_txt,layer_id,place_text,pernr,created_when,user_name"
+								showRowCount="true"
+								tableType="ResponsiveTable"
+								useTablePersonalisation="false"
+								beforeRebindTable="onBeforeRebindNotifyAllTable"
+								>
+							<smartTable:customToolbar>
+								<m:OverflowToolbar design="Transparent">
+									<m:ToolbarSpacer/>
+									<m:Button text="Notify all" icon="sap-icon://email" press="onNotifyAll"/> 
+								</m:OverflowToolbar>
+							</smartTable:customToolbar>
+
+							<m:Table id="idNotifyAllTableInner">
+								<m:columns>
+									<m:Column>
+										<m:customData>
+											<core:CustomData key="p13nData" value='\{"columnKey": "edit", "columnIndex": 0}'/>
+										</m:customData>
+										<m:Text text="Status"/>
+									</m:Column>
+								</m:columns>
+								<m:items>
+									<m:ColumnListItem>
+										<m:ObjectStatus
+											icon="{= ${is_notified} ? 'sap-icon://sys-enter-2': 'sap-icon://information'}"
+											text="{= ${is_notified} ? 'Notified': 'Planned'}"
+											state="{= ${is_notified} ? 'Success': 'Information'}" />
+									</m:ColumnListItem>
+								</m:items>
+							</m:Table>
+						</smartTable:SmartTable>
+					</m:VBox>
+				</ObjectPageSubSection>
+			</ObjectPageSection>
+
 			<!-- Settings -->
 			<ObjectPageSection titleUppercase="false" visible="{is_admin}">
 				<customAnchorBarButton>
@@ -187,8 +274,7 @@
 												initiallyVisibleFields="layer_address,persa"
 												showRowCount="true"
 												useExportToExcel="true"
-												tableType="ResponsiveTable"
-												enableAutoBinding="true">
+												tableType="ResponsiveTable">
 								<smartTable:customToolbar>
 									<m:OverflowToolbar design="Transparent">
 										<m:ToolbarSpacer/>

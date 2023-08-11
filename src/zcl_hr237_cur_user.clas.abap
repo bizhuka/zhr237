@@ -17,26 +17,53 @@ CLASS zcl_hr237_cur_user DEFINITION
 
       fill_roles_info       RETURNING VALUE(ro_cur_user) TYPE REF TO zcl_hr237_cur_user,
       fill_nearest_booking  RETURNING VALUE(ro_cur_user) TYPE REF TO zcl_hr237_cur_user,
-      fill_org_info         RETURNING VALUE(ro_cur_user) TYPE REF TO zcl_hr237_cur_user.
+      fill_org_info         RETURNING VALUE(ro_cur_user) TYPE REF TO zcl_hr237_cur_user,
+
+      set_own_pernr_first CHANGING ct_result TYPE STANDARD TABLE,
+
+      check_date_is_ok IMPORTING iv_datum        TYPE d
+                       RETURNING VALUE(rv_error) TYPE string.
+  PRIVATE SECTION.
+    METHODS:
+      _get_allowed_book_period RETURNING VALUE(rs_period) TYPE zcl_hr_month=>ts_range.
 ENDCLASS.
 
 
 
-CLASS zcl_hr237_cur_user IMPLEMENTATION.
+CLASS ZCL_HR237_CUR_USER IMPLEMENTATION.
+
+
+  METHOD check_date_is_ok.
+    DATA(ls_period) = _get_allowed_book_period( ).
+
+    rv_error = COND #(
+       WHEN iv_datum NOT BETWEEN ls_period-begda AND ls_period-endda
+       THEN |The booking date { iv_datum DATE = USER } should be between { ls_period-begda DATE = USER } and { ls_period-endda DATE = USER }| ).
+  ENDMETHOD.
 
 
   METHOD constructor.
     mv_datum = sy-datum.
+
+    DATA(lv_uname) = sy-uname.
+    ASSIGN zcl_hr237_opt=>t_user_substitute[ from = lv_uname ] TO FIELD-SYMBOL(<ls_opt>).
+    IF sy-subrc = 0.
+      lv_uname = <ls_opt>-to.
+    ENDIF.
+
     ms_info = VALUE #(
-      uname     = sy-uname
-      full_name = zcl_hr237_book=>get_user_full_name( sy-uname )
-      min_date  = zcl_hr237_opt=>r_book_date_ok[ 1 ]-low
-      max_date  = zcl_hr237_opt=>r_book_date_ok[ 1 ]-high
+      uname     = lv_uname
+      full_name = zcl_hr237_assist=>get_user_full_name( lv_uname )
 
       support_subject = zcl_hr237_opt=>v_support_subject
       support_email   = zcl_hr237_opt=>v_support_email
       support_body    = zcl_hr237_opt=>v_support_body
     ).
+
+    " TODO optimize
+    DATA(ls_period) = _get_allowed_book_period( ).
+    ms_info-min_date  = ls_period-begda - mv_datum.
+    ms_info-max_date  = ls_period-endda - mv_datum.
 
     TRY.
         ms_info-pernr = zcl_hcm_wf=>get_pernr_by_uname( ms_info-uname ).
@@ -64,29 +91,28 @@ CLASS zcl_hr237_cur_user IMPLEMENTATION.
 
     ms_info-nearest_book_date       = <ls_booking>-datum.
     ms_info-nearest_book_info_text  = |{ <ls_booking>-datum DATE = USER } { <ls_booking>-place_id }|.
-    ms_info-nearest_book_info_label = |{ zcl_hr237_book=>get_user_full_name( <ls_booking>-create_by ) } - { lv_when_date DATE = USER } { lv_when_time TIME = USER }|.
+    ms_info-nearest_book_info_label = |{ zcl_hr237_assist=>get_user_full_name( <ls_booking>-create_by ) } - { lv_when_date DATE = USER } { lv_when_time TIME = USER }|.
   ENDMETHOD.
 
 
   METHOD fill_org_info.
     ro_cur_user = me.
 
-    DATA(ls_0001) = zcl_hr237_book=>get_it_0001(
+    DATA(ls_0001) = zcl_hr237_assist=>get_it_0001(
      iv_pernr = ms_info-pernr
      iv_datum = mv_datum ).
 
-    ms_info-persa = ls_0001-werks.
-    SELECT SINGLE name1 INTO @ms_info-persa_txt
-    FROM zc_py000_personnelarea
-    WHERE persa = @ms_info-persa.
+    ms_info-persa     = ls_0001-werks.
+    ms_info-persa_txt = zcl_hr237_assist=>get_long_text( iv_objid = ls_0001-werks
+                                                         iv_otype = 'A' ).
 
     CHECK ls_0001-plans IS NOT INITIAL.
-    ms_info-department = zcl_hr237_dir_subo=>get_department(
+    ms_info-department = zcl_hr237_assist=>get_department(
         iv_plans = ls_0001-plans
         iv_datum = mv_datum ).
 
-    ms_info-department_txt = zcl_hr237_book=>get_long_text( iv_objid = ms_info-department
-                                                            iv_otype = 'O' ).
+    ms_info-department_txt = zcl_hr237_assist=>get_long_text( iv_objid = ms_info-department
+                                                              iv_otype = 'O' ).
   ENDMETHOD.
 
 
@@ -106,7 +132,27 @@ CLASS zcl_hr237_cur_user IMPLEMENTATION.
       CHECK <lv_field> = abap_true.
       APPEND <ls_role>-desc TO lt_role_info.
     ENDLOOP.
+
+    IF ms_info-is_admin = abap_true.
+      ms_info-is_manager = abap_false.
+      " TODO text?
+      DELETE lt_role_info WHERE table_line CP '*anager*'.
+    ENDIF.
+
     ms_info-roles_info = concat_lines_of( table = lt_role_info sep = |, | ).
+  ENDMETHOD.
+
+
+  METHOD set_own_pernr_first.
+    DATA(lv_own_pernr) = ms_info-pernr.
+    READ TABLE ct_result ASSIGNING FIELD-SYMBOL(<ls_item>)
+      WITH KEY ('PERNR') = lv_own_pernr.
+
+    IF sy-subrc = 0.
+      DATA(lv_tabix_delete) = sy-tabix + 1.
+      INSERT <ls_item> INTO ct_result INDEX 1.
+      DELETE ct_result INDEX lv_tabix_delete.
+    ENDIF.
   ENDMETHOD.
 
 
@@ -120,5 +166,31 @@ CLASS zcl_hr237_cur_user IMPLEMENTATION.
 
     APPEND INITIAL LINE TO ct_data_rows ASSIGNING FIELD-SYMBOL(<ls_result>).
     MOVE-CORRESPONDING ms_info TO <ls_result>.
+  ENDMETHOD.
+
+
+  METHOD _get_allowed_book_period.
+    SELECT agr_name INTO TABLE @DATA(lt_roles)          "#EC CI_GENBUFF
+    FROM agr_users
+    WHERE uname    EQ @ms_info-uname
+      AND from_dat LE @sy-datum
+      AND to_dat   GE @sy-datum.
+
+    DATA(lv_min) = 999.
+    DATA(lv_max) = 0.
+    LOOP AT lt_roles ASSIGNING FIELD-SYMBOL(<ls_role>).
+      LOOP AT zcl_hr237_opt=>t_role ASSIGNING FIELD-SYMBOL(<ls_opt>).
+        CHECK <ls_role>-agr_name IN <ls_opt>-t_agr_name[].
+
+        lv_min = nmin( val1 = lv_min
+                       val2 = <ls_opt>-from_date ).
+        lv_max = nmax( val1 = lv_max
+                       val2 = <ls_opt>-to_date ).
+      ENDLOOP.
+    ENDLOOP.
+
+    CHECK lv_min <> 999.
+    rs_period = VALUE #( begda = mv_datum + lv_min
+                         endda = mv_datum + lv_max ).
   ENDMETHOD.
 ENDCLASS.

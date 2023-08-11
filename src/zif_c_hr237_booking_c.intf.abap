@@ -108,6 +108,7 @@ interface ZIF_C_HR237_BOOKING_C
   PLACE_ID                       TYPE STRING VALUE 'PLACE_ID',
   CREATE_BY                      TYPE STRING VALUE 'CREATE_BY',
   CREATED_WHEN                   TYPE STRING VALUE 'CREATED_WHEN',
+  IS_NOTIFIED                    TYPE STRING VALUE 'IS_NOTIFIED',
       END OF ZC_HR237_BOOKING,
     END OF SC_NODE_ATTRIBUTE .
   constants:

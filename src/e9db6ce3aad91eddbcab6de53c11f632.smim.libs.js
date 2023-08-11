@@ -20,7 +20,7 @@ sap.ui.define([
                     delete dest[oldKey]
 
             for (let newKey in src)
-                if (src.hasOwnProperty(newKey)){
+                if (src.hasOwnProperty(newKey)) {
                     //console.log(typeof src[newKey], newKey)
                     dest[newKey] = src[newKey]
                 }
@@ -51,17 +51,17 @@ sap.ui.define([
             return urlBig
         },
 
-        get_qr_code_url: function (date, pernr, action) {
-            return `${document.location.origin}/sap/opu/odata/sap/ZC_HR237_BOOKING_CDS/ZC_HR237_QrCode(datum=datetime'${this.getDateIso(date)}T00:00:00',pernr='${pernr}',action='${action}')/$value`
+        get_base_url: function () {
+            return `${document.location.origin}/sap/opu/odata/sap/ZC_HR237_BOOKING_CDS/`
         },
 
-        send_request: function (theUrl) {
+        send_request: function (theUrl, callback) {
             var xmlHttp = new XMLHttpRequest()
-            // , callback
-            // xmlHttp.onreadystatechange = function () {
-            //     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            //         callback(xmlHttp.responseText);
-            // }
+            if (callback)
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                        callback(xmlHttp.responseText);
+                }
             xmlHttp.open("GET", theUrl, true) // true for asynchronous 
             xmlHttp.send(null)
         },
@@ -72,6 +72,9 @@ sap.ui.define([
                 !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
         },
 
+        get_middle: function (d1, d2) {
+            return new Date((d1.getTime() + d2.getTime()) / 2)
+        },
 
         addBindingListener: function (oBindingInfo, sEventName, fHandler) {
             oBindingInfo.events = oBindingInfo.events || {};
@@ -88,5 +91,5 @@ sap.ui.define([
             }
         },
 
-	};
+    };
 });

@@ -29,7 +29,7 @@ CLASS lcl_main IMPLEMENTATION.
   METHOD start_of_selection.
     DATA(ls_user_info) = NEW zcl_hr237_cur_user( )->fill_roles_info( )->ms_info.
     IF ls_user_info-is_admin <> abap_true.
-      MESSAGE s001(zpa_065) WITH sy-uname DISPLAY LIKE 'E'.
+      MESSAGE s001(zpa_065) WITH ls_user_info-uname DISPLAY LIKE 'E'.
       RETURN.
     ENDIF.
 

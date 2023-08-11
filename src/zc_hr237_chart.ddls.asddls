@@ -13,7 +13,8 @@ define view ZC_HR237_Chart as select from zdhr237_book as _main
     
     cast(0 as abap.int8) as cnt,
     cast(0 as abap.int8) as target_cnt,
-    cast(' ' as abap.char( 40 ) ) as period,
+    cast(' ' as abap.char( 40 ) ) as period,     // As text
+    cast(' ' as abap.char( 40 ) ) as period_raw, // Numeric for sorting
     cast(' ' as abap.char( 40 ) ) as chart_kind,
         
     place_id,
@@ -26,12 +27,15 @@ define view ZC_HR237_Chart as select from zdhr237_book as _main
     case substring(datum, 5, 2) when '01' then '01'
                                 when '02' then '01'
                                 when '03' then '01'
+                                
                                 when '04' then '02'
                                 when '05' then '02'
                                 when '06' then '02'
+                                
                                 when '07' then '03'
                                 when '08' then '03'
                                 when '09' then '03'
+                                
                                 when '10' then '04'
                                 when '11' then '04'
                                 when '12' then '04' end as datum_quarter,

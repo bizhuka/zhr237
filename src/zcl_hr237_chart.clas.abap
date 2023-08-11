@@ -21,11 +21,11 @@ CLASS zcl_hr237_chart DEFINITION
 
 
     CONSTANTS: BEGIN OF mc_period,
-                 day     TYPE zc_hr237_chart-period VALUE 'DAY',
-                 week    TYPE zc_hr237_chart-period VALUE 'WEEK',
-                 month   TYPE zc_hr237_chart-period VALUE 'MONTH',
-                 quarter TYPE zc_hr237_chart-period VALUE 'QUARTER',
-                 year    TYPE zc_hr237_chart-period VALUE 'YEAR',
+                 day     TYPE zss_hr237_ui-period VALUE 'DAY',
+                 week    TYPE zss_hr237_ui-period VALUE 'WEEK',
+                 month   TYPE zss_hr237_ui-period VALUE 'MONTH',
+                 quarter TYPE zss_hr237_ui-period VALUE 'QUARTER',
+                 year    TYPE zss_hr237_ui-period VALUE 'YEAR',
                END OF mc_period.
 
     METHODS _get_week_text
@@ -96,14 +96,19 @@ CLASS ZCL_HR237_CHART IMPLEMENTATION.
 
 **********************************************************************
     DATA(lt_result) = VALUE tt_chart( ).
-    " TODO Make option ?
-    DATA(lv_rows_count) = COND i( WHEN iv_field = |DEPARTMENT|
-                                  THEN 200 * 5
-                                  ELSE 200 ).
 
-    SELECT (lv_select) INTO CORRESPONDING FIELDS OF TABLE @lt_result  "#EC CI_NO_TRANSFORM
-    FROM zc_hr237_chart UP TO @lv_rows_count ROWS
-    WHERE (lv_where)
+*    DATA(lv_rows_count) = COND i( WHEN iv_field = |DEPARTMENT|
+*                                  THEN 200 * 5
+*                                  ELSE 200 ).
+
+    " Use date option
+    ASSIGN zcl_hr237_opt=>t_period[ period = is_filter-period ] TO FIELD-SYMBOL(<ls_period>).
+    DATA(lv_from) = zcl_hr_month=>get_period_start_date( iv_period = <ls_period>-period
+                                                         iv_offset = - <ls_period>-per_count ).
+
+    SELECT (lv_select) INTO CORRESPONDING FIELDS OF TABLE @lt_result "#EC CI_NO_TRANSFORM
+    FROM zc_hr237_chart " UP TO @lv_rows_count ROWS
+    WHERE (lv_where) AND datum >= @lv_from
     GROUP BY (lv_group_by)
     ORDER BY (lv_order_by).
 
@@ -114,10 +119,13 @@ CLASS ZCL_HR237_CHART IMPLEMENTATION.
 
     DATA(lv_target_count) = _calc_target_count( is_filter ).
     LOOP AT lt_result ASSIGNING FIELD-SYMBOL(<ls_result>).
-      DATA(lt_period) = VALUE string_table( ).
+      DATA(lt_period)     = VALUE string_table( ).
+      DATA(lt_period_raw) = VALUE string_table( ).
 
       LOOP AT lt_field INTO lv_field.
         ASSIGN COMPONENT lv_field OF STRUCTURE <ls_result> TO FIELD-SYMBOL(<lv_field>).
+        APPEND <lv_field> TO lt_period_raw[].
+
         DATA(lv_field_txt) = SWITCH #( lv_field WHEN 'DATUM'         THEN |{ CONV d( <lv_field> ) DATE = USER }|
                                                 WHEN 'DATUM_WEEK'    THEN _get_week_text( iv_week = CONV #( <lv_field> )
                                                                                           iv_year = <ls_result>-datum_year )
@@ -128,10 +136,15 @@ CLASS ZCL_HR237_CHART IMPLEMENTATION.
         APPEND lv_field_txt TO lt_period.
       ENDLOOP.
       <ls_result>-chart_kind     = iv_chart_kind.
-      <ls_result>-period         = concat_lines_of( table = lt_period sep = | | ).
+      <ls_result>-period         = concat_lines_of( table = lt_period     sep = | | ).
+      <ls_result>-period_raw     = concat_lines_of( table = lt_period_raw sep = |-| ).
       <ls_result>-department_txt = COND #( WHEN <ls_result>-department IS INITIAL
                                            THEN |Deleted desks|
                                            ELSE VALUE #( t_department[ orgeh = <ls_result>-department ]-orgtx OPTIONAL ) ).
+      IF <ls_result>-department_txt IS INITIAL.
+        <ls_result>-department_txt = |Department { <ls_result>-department }|.
+      ENDIF.
+
       <ls_result>-target_cnt     = lv_target_count.
 
       INSERT INITIAL LINE INTO ct_data_rows[] INDEX 1 ASSIGNING FIELD-SYMBOL(<ls_row>).
@@ -160,14 +173,14 @@ CLASS ZCL_HR237_CHART IMPLEMENTATION.
   METHOD _fill_department_txt.
     CHECK it_chart[] IS NOT INITIAL.
 
-    SELECT orgeh, orgtx INTO TABLE @t_department "#EC CI_NO_TRANSFORM
+    SELECT orgeh, orgtx INTO TABLE @t_department   "#EC CI_NO_TRANSFORM
     FROM zc_hr237_department
     FOR ALL ENTRIES IN @it_chart
     WHERE orgeh = @it_chart-department.
 
     LOOP AT t_department ASSIGNING FIELD-SYMBOL(<ls_department>).
-      DATA(lv_long_text) = zcl_hr237_book=>get_long_text( iv_objid = <ls_department>-orgeh
-                                                          iv_otype = 'O' ).
+      DATA(lv_long_text) = zcl_hr237_assist=>get_long_text( iv_objid = <ls_department>-orgeh
+                                                            iv_otype = 'O' ).
       CHECK lv_long_text IS NOT INITIAL.
       <ls_department>-orgtx = lv_long_text.
     ENDLOOP.
@@ -175,7 +188,7 @@ CLASS ZCL_HR237_CHART IMPLEMENTATION.
 
 
   METHOD _get_week_text.
-    " rv_text = CONV num2( iv_week ).
+    " rv_text = |{ iv_year } week №{ iv_week }|.
     DATA(lv_from) = CONV d( CONV d( |{ iv_year }0101| ) + iv_week * 7 ).
     DATA(lv_to) = CONV d( lv_from + 6 ).
     rv_text = |{ lv_from+4(2) }.{ lv_from+6(2) } - { lv_to+4(2) }.{ lv_to+6(2) }|.
