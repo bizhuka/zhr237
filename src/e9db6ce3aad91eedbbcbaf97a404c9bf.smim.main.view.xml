@@ -81,9 +81,12 @@
 					<m:PlanningCalendar
 							id="bookingCalendar" 				
 							rows="{calendar>/persons}"
+							specialDates="{path: 'calendar>/specialDates', templateShareable: true}"     
+			
 							viewKey="Week"
 							firstDayOfWeek="1"
 							startDateChange="onStartDateChange"
+							stickyHeader="true"
 							appointmentsVisualization="Filled"
 							showEmptyIntervalHeaders="true"
 							appointmentSelect="handleAppointmentSelect"
@@ -128,6 +131,18 @@
 									</m:appointments>
 								</m:PlanningCalendarRow>
 							</m:rows>
+
+							<m:specialDates>
+								<!-- Holidays -->
+								<unified:DateTypeRange
+										startDate="{calendar>datum}"
+										endDate="{calendar>datum}"
+										tooltip="{calendar>tooltip}"
+										type="Type02"
+										secondaryType="Type03"
+										color="#ED1C24">
+								</unified:DateTypeRange>
+							</m:specialDates>
 						</m:PlanningCalendar>
 				</ObjectPageSubSection>
 			</ObjectPageSection>
@@ -167,6 +182,8 @@
 										<m:OverflowToolbar id="idCheckBookingToolbar" design="Transparent">
 										</m:OverflowToolbar>
 									</smartTable:customToolbar>
+							<m:Table sticky="ColumnHeaders,HeaderToolbar,InfoToolbar">
+							</m:Table>
 					</smartTable:SmartTable>
 				</m:VBox>
 				</ObjectPageSubSection>
@@ -237,7 +254,8 @@
 								</m:OverflowToolbar>
 							</smartTable:customToolbar>
 
-							<m:Table id="idNotifyAllTableInner">
+							<m:Table id="idNotifyAllTableInner"
+							         sticky="ColumnHeaders,HeaderToolbar,InfoToolbar">
 								<m:columns>
 									<m:Column>
 										<m:customData>
@@ -261,14 +279,16 @@
 			</ObjectPageSection>
 
 			<!-- Settings -->
-			<ObjectPageSection titleUppercase="false" visible="{is_admin}">
+			<ObjectPageSection id="settingsTab"
+			                   titleUppercase="false" visible="{is_admin}">
 				<customAnchorBarButton>
 					<m:Button icon="sap-icon://customize"
 					          text="Settings"/>
 				</customAnchorBarButton>
 				<ObjectPageSubSection title="">
 					<m:VBox>
-							<smartTable:SmartTable header="Schemes count"
+							<smartTable:SmartTable id="id_settings_table"
+							                    header="Schemes count"
 												entitySet="ZC_HR237_Layer"
 												requestAtLeastFields="layer_id,layer_text"
 												initiallyVisibleFields="layer_address,persa"

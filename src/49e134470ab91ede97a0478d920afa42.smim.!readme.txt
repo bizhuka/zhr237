@@ -1,0 +1,35 @@
+run SE38-> ZBSP_UPDATE_MIMEREPOS
+upload or download BSP application
+
+
+--------------------------------------------------------------------
+
+run commands:
+- npm install
+- npm start
+
+--------------------------------------------------------------------
+Before upload to SAP
+ 
+npm install --global @ui5/cli
+- ui5 build preload
+
+
+Copy \dist\Component-preload.js   file to   webapp\ folder
+
+
+delete!
+dist\ & node_modules\       folders
+
+
+--------------------------------------------------------------------
+
+Clean caches
+/IWFND/CACHE_CLEANUP
+/IWBEP/CACHE_CLEANUP
+
+/UI2/INVALIDATE_CLIENT_CACHES
+/UI2/INVALIDATE_GLOBAL_CACHES
+
+Activation
+/IWFND/IWF_ACTIVATE

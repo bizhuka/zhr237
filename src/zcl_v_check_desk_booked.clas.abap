@@ -14,7 +14,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_v_check_desk_booked IMPLEMENTATION.
+CLASS ZCL_V_CHECK_DESK_BOOKED IMPLEMENTATION.
 
 
   METHOD /bobf/if_frw_validation~execute.
@@ -37,10 +37,11 @@ CLASS zcl_v_check_desk_booked IMPLEMENTATION.
     " TODO for marked for CREATE only! Skip is_notified = abap_true.
     LOOP AT lt_booking ASSIGNING FIELD-SYMBOL(<ls_booking>) WHERE created_when IS INITIAL. "or is_notified <> abap_true.
       TRY.
-          DATA(lv_error_message) = zcl_hr237_book=>check_is_already_exists( CORRESPONDING #( <ls_booking> ) ).
+          DATA(ls_new_item) = CORRESPONDING zcl_hr237_book=>ts_update_key( <ls_booking> ).
+          DATA(lv_error_message) = zcl_hr237_book=>check_is_already_exists( ls_new_item ).
 
           IF lv_error_message IS INITIAL.
-            lv_error_message = lo_cur_user->check_date_is_ok( <ls_booking>-datum ).
+            lv_error_message = lo_cur_user->check_date_is_ok( ls_new_item ).
           ENDIF.
 
           CHECK lv_error_message IS NOT INITIAL.

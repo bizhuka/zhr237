@@ -86,7 +86,7 @@ sap.ui.define([
                                 elem.ename = desk.ename
                                 elem.user_name = desk.user_name
                                 elem.created_when = desk.created_when
-                                elem.orgtx = `${elem.orgtx} - booked`
+                                //elem.orgtx = `${elem.orgtx} - booked`
                             }
                         }
 
@@ -96,9 +96,10 @@ sap.ui.define([
                     if (data.results.length === 0)
                         this._add1Desk({
                             place_id: 999,
-                            place_text: 'Dummy just ignore me :)',
+                            place_text: '',
                             place_x: 1,
-                            place_y: 1
+                            place_y: 1,
+                            orgtx: ''
                         })
                     this._model.updateBindings()
 
@@ -140,13 +141,13 @@ sap.ui.define([
                     previous.x = item.place_x
                     previous.y = item.place_y
                 }
-                previous.title = `${item.place_text} - ${item.orgtx}`
+                previous.title = `${item.place_text}` //- ${item.orgtx}`
                 return
             }
 
             this._item.nodes.push({
                 key: item.place_id,
-                title: `${item.place_text} - ${item.orgtx}`,
+                title: `${item.place_text}`, //- ${item.orgtx}`,
                 x: item.place_x,
                 y: item.place_y,
                 status: item.ename ? "Error" : "Success",

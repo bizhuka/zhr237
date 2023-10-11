@@ -23,6 +23,9 @@ CLASS zcl_hr237_book DEFINITION
   PRIVATE SECTION.
 
     METHODS:
+      _fill_holidays IMPORTING is_dates  TYPE zcl_hr_month=>ts_range
+                     CHANGING  ct_result TYPE STANDARD TABLE,
+
       _fill_direct_subordinates IMPORTING it_pernr  TYPE cchry_pernr_range
                                           iv_persa  TYPE p0001-werks
                                 CHANGING  ct_result TYPE STANDARD TABLE,
@@ -98,11 +101,11 @@ CLASS ZCL_HR237_BOOK IMPLEMENTATION.
 
   METHOD zif_sadl_read_runtime~execute.
     TYPES: BEGIN OF ts_filter,
-             pernr                TYPE zc_hr237_booking-pernr,
-             datum                TYPE zc_hr237_booking-datum,
-             filter_days_count    TYPE zc_hr237_booking-filter_days_count,
+             pernr             TYPE zc_hr237_booking-pernr,
+             datum             TYPE zc_hr237_booking-datum,
+             filter_days_count TYPE zc_hr237_booking-filter_days_count,
 *             filter_show_dir_subo TYPE zc_hr237_booking-filter_show_dir_subo,
-             persa                TYPE zc_hr237_booking-persa,
+             persa             TYPE zc_hr237_booking-persa,
            END OF ts_filter.
     DATA(ls_filter) = CORRESPONDING ts_filter( is_filter ).
 
@@ -136,6 +139,8 @@ CLASS ZCL_HR237_BOOK IMPLEMENTATION.
     ENDIF.
     ct_data_rows = CORRESPONDING #( lt_bookings ).
 
+    _fill_holidays( EXPORTING is_dates  = ls_range
+                    CHANGING  ct_result = ct_data_rows ).
     IF lo_cur_user->ms_info-is_manager = abap_true. " ls_filter-filter_show_dir_subo = abap_true.
       _fill_direct_subordinates( EXPORTING it_pernr  = lt_pernrs
                                            iv_persa  = ls_filter-persa
@@ -156,6 +161,14 @@ CLASS ZCL_HR237_BOOK IMPLEMENTATION.
   METHOD _fill_direct_subordinates.
     DATA(lv_datum) = sy-datum.
 
+    DATA(lt_persa_filter) = COND #( WHEN iv_persa IS NOT INITIAL
+                                    THEN VALUE cchry_persa_range( ( sign = 'I' option = 'EQ' low = iv_persa ) ) ).
+    IF lt_persa_filter IS INITIAL.
+      SELECT DISTINCT persa INTO TABLE @DATA(lt_all_persa)  "#EC CI_BYPASS
+      FROM zdhr237_layer.
+      lt_persa_filter = VALUE #( FOR lv_persa IN lt_all_persa ( sign = 'I' option = 'EQ' low = lv_persa ) ).
+    ENDIF.
+
     LOOP AT it_pernr ASSIGNING FIELD-SYMBOL(<ls_pernr>).
       DATA(lv_pernr) = <ls_pernr>-low.
 
@@ -166,9 +179,7 @@ CLASS ZCL_HR237_BOOK IMPLEMENTATION.
       DATA(ls_0001) = zcl_hr237_assist=>get_it_0001(
          iv_pernr = lv_pernr
          iv_datum = lv_datum ).
-      IF iv_persa IS NOT INITIAL.
-        CHECK ls_0001-werks = iv_persa.
-      ENDIF.
+      CHECK ls_0001-werks IN lt_persa_filter[].
 
       APPEND INITIAL LINE TO ct_result ASSIGNING FIELD-SYMBOL(<ls_row>).
       DATA(ls_row) = VALUE zc_hr237_booking(
@@ -182,6 +193,34 @@ CLASS ZCL_HR237_BOOK IMPLEMENTATION.
       ls_row-department = zcl_hr237_assist=>get_department(
         iv_plans = ls_0001-plans
         iv_datum = lv_datum ).
+
+      MOVE-CORRESPONDING ls_row TO <ls_row>.
+    ENDLOOP.
+  ENDMETHOD.
+
+
+  METHOD _fill_holidays.
+    DATA(lt_holiday) = VALUE pegp_ty_iscal_day( ).
+    CALL FUNCTION 'HOLIDAY_GET'
+      EXPORTING
+        holiday_calendar = 'KZ'
+        "factory_calendar = ' '
+        date_from        = is_dates-begda
+        date_to          = is_dates-endda
+      TABLES
+        holidays         = lt_holiday
+      EXCEPTIONS
+        OTHERS           = 1.
+    CHECK sy-subrc = 0.
+
+    LOOP AT lt_holiday ASSIGNING FIELD-SYMBOL(<ls_holiday>).
+      APPEND INITIAL LINE TO ct_result ASSIGNING FIELD-SYMBOL(<ls_row>).
+
+      DATA(ls_row) = VALUE zc_hr237_booking(
+        pernr = 88888888
+        datum = <ls_holiday>-date
+        ename = <ls_holiday>-txt_long
+      ).
 
       MOVE-CORRESPONDING ls_row TO <ls_row>.
     ENDLOOP.

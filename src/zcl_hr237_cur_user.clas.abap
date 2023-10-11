@@ -21,11 +21,14 @@ CLASS zcl_hr237_cur_user DEFINITION
 
       set_own_pernr_first CHANGING ct_result TYPE STANDARD TABLE,
 
-      check_date_is_ok IMPORTING iv_datum        TYPE d
+      check_date_is_ok IMPORTING is_insert_key   TYPE zcl_hr237_book=>ts_update_key
                        RETURNING VALUE(rv_error) TYPE string.
   PRIVATE SECTION.
     METHODS:
-      _get_allowed_book_period RETURNING VALUE(rs_period) TYPE zcl_hr_month=>ts_range.
+      _get_allowed_book_period RETURNING VALUE(rs_period) TYPE zcl_hr_month=>ts_range,
+
+      _check_is_absence        IMPORTING is_insert_key   TYPE zcl_hr237_book=>ts_update_key
+                               RETURNING VALUE(rv_error) TYPE string.
 ENDCLASS.
 
 
@@ -37,8 +40,11 @@ CLASS ZCL_HR237_CUR_USER IMPLEMENTATION.
     DATA(ls_period) = _get_allowed_book_period( ).
 
     rv_error = COND #(
-       WHEN iv_datum NOT BETWEEN ls_period-begda AND ls_period-endda
-       THEN |The booking date { iv_datum DATE = USER } should be between { ls_period-begda DATE = USER } and { ls_period-endda DATE = USER }| ).
+       WHEN is_insert_key-datum NOT BETWEEN ls_period-begda AND ls_period-endda
+       THEN |The booking date { is_insert_key-datum DATE = USER } should be between { ls_period-begda DATE = USER } and { ls_period-endda DATE = USER }| ).
+    CHECK rv_error IS INITIAL.
+
+    rv_error = _check_is_absence( is_insert_key ).
   ENDMETHOD.
 
 
@@ -166,6 +172,51 @@ CLASS ZCL_HR237_CUR_USER IMPLEMENTATION.
 
     APPEND INITIAL LINE TO ct_data_rows ASSIGNING FIELD-SYMBOL(<ls_result>).
     MOVE-CORRESPONDING ms_info TO <ls_result>.
+  ENDMETHOD.
+
+
+  METHOD _check_is_absence.
+    " it 2001 absence is enough ?
+*    DATA(ls_2001) = CAST p2001( zcl_hr_read=>infty_row(
+*         iv_infty   = '2001'
+*         iv_pernr   = is_insert_key-pernr
+*         iv_begda   = is_insert_key-datum
+*         iv_endda   = is_insert_key-datum
+*         iv_where   = |AWART in iv_param1[]|
+*         iv_param1  = zcl_hr237_opt=>r_awart[]
+*         iv_no_auth = abap_true
+*         is_default = VALUE p2001( )
+*     ) )->*.
+
+
+    DATA(lo_schedule) = NEW zcl_pt028_schedule( ).
+    DATA(lt_pdpsp) = lo_schedule->get_schedule( iv_pernr = is_insert_key-pernr
+                                                is_dates = VALUE #( begda = is_insert_key-datum
+                                                                    endda = is_insert_key-datum ) ).
+    ASSIGN lt_pdpsp[ 1 ] TO FIELD-SYMBOL(<ls_book_date_schedule>).
+    CHECK sy-subrc = 0.
+
+    " TODO check <ls_book_date_schedule>-tprog  (NORM or FREE)
+    "            <ls_book_date_schedule>-stdaz  work hours ?
+    DATA(ls_2001) = VALUE p2001(
+      awart = <ls_book_date_schedule>-awart
+    ).
+    CHECK ls_2001-awart IS NOT INITIAL
+      AND ls_2001-awart IN zcl_hr237_opt=>r_awart[]
+      AND zcl_hr237_opt=>r_awart[] IS NOT INITIAL.
+
+    DATA(lv_awart_txt) = zcl_py000=>get_subtype_text( iv_molga = 'KZ'
+                                                      iv_infty = '2001'
+                                                      iv_subty = ls_2001-awart ).
+
+    DATA(ls_0001) = zcl_hr237_assist=>get_it_0001(
+     iv_pernr = is_insert_key-pernr
+     iv_datum = is_insert_key-datum ).
+
+    MESSAGE e001(zhr_237) WITH lv_awart_txt
+                               is_insert_key-datum
+                               ls_0001-ename
+                               INTO rv_error.
   ENDMETHOD.
 
 

@@ -27,6 +27,8 @@ CLASS zcl_hr237_opt DEFINITION
       END OF ts_user_substitute.
 
     CLASS-DATA:
+      _readme            TYPE string        READ-ONLY,
+
       t_role            TYPE tt_role        READ-ONLY,
       v_subject         TYPE text255        READ-ONLY,
       v_email           TYPE string         READ-ONLY,
@@ -36,7 +38,9 @@ CLASS zcl_hr237_opt DEFINITION
 
       v_support_subject TYPE text255        READ-ONLY,
       v_support_email   TYPE text255        READ-ONLY,
-      v_support_body    TYPE string         READ-ONLY.
+      v_support_body    TYPE string         READ-ONLY,
+
+      r_awart           TYPE RANGE OF p2001-awart READ-ONLY.
 
 
     CLASS-METHODS:

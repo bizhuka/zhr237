@@ -91,10 +91,13 @@ ENDCLASS.
 
 
 
-CLASS zcl_a_hr237_schedule_report IMPLEMENTATION.
+CLASS ZCL_A_HR237_SCHEDULE_REPORT IMPLEMENTATION.
+
+
   METHOD zif_sadl_stream_runtime~create_stream.
 
   ENDMETHOD.
+
 
   METHOD zif_sadl_stream_runtime~get_stream.
     _fill_filter( it_key_tab ).
@@ -112,22 +115,6 @@ CLASS zcl_a_hr237_schedule_report IMPLEMENTATION.
       mime_type = lv_mime_type ).
   ENDMETHOD.
 
-  METHOD _make_report.
-    DATA(lt_subordinates) = zcl_hr237_assist=>get_direct_subordinates( ).
-
-    DATA(ls_root) = VALUE ts_root(
-       _period = ms_filter-_period
-       t       = _alv_from_db( lt_subordinates ) ).
-
-    _alv_fill_booking( EXPORTING it_subordinates = lt_subordinates
-                       CHANGING  ct_alv = ls_root-t ).
-
-    NEW zcl_hr237_cur_user( )->set_own_pernr_first( CHANGING ct_result = ls_root-t ).
-
-    rv_report = NEW zcl_xtt_excel_xlsx( NEW zcl_xtt_file_smw0( 'ZR_HR237_SCHEDULE.XLSX' )
-    )->merge(  ls_root
-    )->get_raw( ).
-  ENDMETHOD.
 
   METHOD _alv_fill_booking.
     TYPES:
@@ -155,10 +142,13 @@ CLASS zcl_a_hr237_schedule_report IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
+
   METHOD _alv_from_db.
     DATA(lt_persa) = COND #( WHEN ms_filter-persa IS NOT INITIAL THEN VALUE cchry_persa_range( ( sign = 'I' option = 'EQ' low = ms_filter-persa ) ) ).
     SELECT p1~pernr, p1~werks AS persa, p1~ename, p1~plans, p1~ansvh, p7~zzbwpa INTO TABLE @DATA(lt_0001)
-    FROM pa0001 AS p1 LEFT OUTER JOIN pa0007 AS p7 ON p7~pernr EQ p1~pernr
+    FROM pa0001 AS p1
+                      INNER JOIN zdhr237_layer AS _layer ON _layer~persa = p1~werks   "#EC CI_BUFFJOIN
+                      LEFT OUTER JOIN pa0007 AS p7 ON p7~pernr EQ p1~pernr            "#EC CI_BUFFJOIN
                                                   AND p7~sprps EQ @space
                                                   AND p7~endda GE @ms_filter-begda
                                                   AND p7~begda LE @ms_filter-begda
@@ -196,6 +186,7 @@ CLASS zcl_a_hr237_schedule_report IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD _fill_filter.
     CLEAR: mv_filter,
            ms_filter.
@@ -213,4 +204,21 @@ CLASS zcl_a_hr237_schedule_report IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+  METHOD _make_report.
+    DATA(lt_subordinates) = zcl_hr237_assist=>get_direct_subordinates( ).
+
+    DATA(ls_root) = VALUE ts_root(
+       _period = ms_filter-_period
+       t       = _alv_from_db( lt_subordinates ) ).
+
+    _alv_fill_booking( EXPORTING it_subordinates = lt_subordinates
+                       CHANGING  ct_alv = ls_root-t ).
+
+    NEW zcl_hr237_cur_user( )->set_own_pernr_first( CHANGING ct_result = ls_root-t ).
+
+    rv_report = NEW zcl_xtt_excel_xlsx( NEW zcl_xtt_file_smw0( 'ZR_HR237_SCHEDULE.XLSX' )
+    )->merge(  ls_root
+    )->get_raw( ).
+  ENDMETHOD.
 ENDCLASS.

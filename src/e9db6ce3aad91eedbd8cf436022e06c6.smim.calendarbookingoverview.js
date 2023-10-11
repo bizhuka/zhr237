@@ -10,7 +10,8 @@ sap.ui.define([
 
     return BaseObject.extend("zhr237.controller.CalendarBookingOverview", {
         _calendarData: {
-            persons: []
+            persons: [],
+            specialDates: []
         },
 
         // No view. Use owners tab
@@ -30,8 +31,18 @@ sap.ui.define([
                 filters: this._getFilters(),
 
                 success: function (data) {
+                    this._calendarData.specialDates = []
                     const persons = {}
+
                     for (const item of data.results) {
+                        if (item.pernr === '88888888') {
+                            this._calendarData.specialDates.push({
+                                datum: item.datum,
+                                tooltip: `${Libs.date_to_text(item.datum)} - ${item.ename}`
+                            })
+                            continue
+                        }
+
                         const person = persons[item.pernr] ? persons[item.pernr] : {
                             title: `${item.pernr.replace(/^0+/, '')} - ${item.ename}`,
                             text: `${item.persa_txt} - ${item.department_txt}`,

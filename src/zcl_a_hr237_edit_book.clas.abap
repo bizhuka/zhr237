@@ -19,7 +19,7 @@ CLASS zcl_a_hr237_edit_book DEFINITION PUBLIC FINAL CREATE PUBLIC .
       mo_bopf_manager TYPE REF TO zcl_bopf_manager. " BOPF wrapper class
 
     METHODS:
-      _check_is_exists   IMPORTING is_update_item  TYPE ts_update_item
+      _check_all         IMPORTING is_update_item  TYPE ts_update_item
                          RETURNING VALUE(rv_error) TYPE string,
 
       _delete_previous   IMPORTING is_update_item  TYPE ts_update_item
@@ -31,7 +31,9 @@ ENDCLASS.
 
 
 
-CLASS zcl_a_hr237_edit_book IMPLEMENTATION.
+CLASS ZCL_A_HR237_EDIT_BOOK IMPLEMENTATION.
+
+
   METHOD constructor.
     mo_cur_user = NEW #( ).
 
@@ -43,6 +45,7 @@ CLASS zcl_a_hr237_edit_book IMPLEMENTATION.
             previous = lo_error.
     ENDTRY.
   ENDMETHOD.
+
 
   METHOD zif_sadl_stream_runtime~create_stream.
     " № 0
@@ -57,7 +60,7 @@ CLASS zcl_a_hr237_edit_book IMPLEMENTATION.
 
     " № 2
     IF lv_error IS INITIAL.
-      lv_error = _check_is_exists( ls_update_item ).
+      lv_error = _check_all( ls_update_item ).
     ENDIF.
 
     " № 3
@@ -109,12 +112,12 @@ CLASS zcl_a_hr237_edit_book IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD _check_is_exists.
+  METHOD _check_all.
     rv_error = COND #( WHEN is_update_item-_new = is_update_item-_prev
                        THEN |All data are same| ).
     CHECK rv_error IS INITIAL.
 
-    rv_error = mo_cur_user->check_date_is_ok( is_update_item-datum ).
+    rv_error = mo_cur_user->check_date_is_ok( is_update_item-_new ).
     CHECK rv_error IS INITIAL.
 
     rv_error = zcl_hr237_book=>check_is_already_exists(

@@ -109,6 +109,9 @@ sap.ui.define([
                     case this.byId('notifTab'):
                         NotifyAll.init_notif_tab(this)
                         return
+                    case this.byId('settingsTab'):
+                        this.byId('id_settings_table').rebindTable()
+                        return
                 }
             },
 
