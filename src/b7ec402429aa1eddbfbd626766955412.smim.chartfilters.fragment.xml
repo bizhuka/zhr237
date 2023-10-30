@@ -14,7 +14,7 @@
 
         <ComboBox
             selectedKey="{chart>/_orgeh_filter}"
-            items="{ path: '/ZC_HR237_Department',
+            items="{ path: '/ZC_HR237_Department', length: '3333',
                 filters: [{
                     path: 'place_count',
                     operator: 'GT',

@@ -198,9 +198,13 @@ sap.ui.define([
                         this.getView().getModel()[methodName](url,
                             update_item,
                             {
-                                success: function () {
+                                success: function (item) {
+                                    if (item.is_error && item.message && item.is_error === 'X') {
+                                        Libs.showMessage(`For ${typeName} ${update_item[keyField]} the error occurred. ${item.message}`, true)
+                                        return
+                                    }
                                     //const itemName = typeName === 'Place' ? 'Desk' : typeName
-                                    Libs.showMessage.show(`${typeName} ${update_item[keyField]} was successfully ${methodName}ed`)
+                                    Libs.showMessage(`${typeName} ${update_item[keyField]} was successfully ${methodName}ed`)
                                 }.bind(this)
                             })
 

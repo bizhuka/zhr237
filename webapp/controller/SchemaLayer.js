@@ -24,6 +24,7 @@ sap.ui.define([
             this._model = new sap.ui.model.json.JSONModel()
             this._model.setDefaultBindingMode(sap.ui.model.BindingMode.TwoWay);
             this._model.setData(this._item)
+            this._model.setSizeLimit(3333);
         },
 
         display: function (target, ext) {

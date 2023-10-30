@@ -11,11 +11,15 @@ CLASS zcl_hr237_layer DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    METHODS _upload_layer_image
-      IMPORTING iv_layer_id     TYPE zc_hr237_layer-layer_id
-                iv_file_name    TYPE string
-                iv_image        TYPE xstring
-      RETURNING VALUE(rv_error) TYPE string.
+    METHODS:
+      _upload_layer_image
+        IMPORTING iv_layer_id     TYPE zc_hr237_layer-layer_id
+                  iv_file_name    TYPE string
+                  iv_image        TYPE xstring
+        RETURNING VALUE(rv_error) TYPE string,
+
+      _create_new_layer IMPORTING iv_json_data    TYPE xstring
+                        RETURNING VALUE(rv_error) TYPE string.
 ENDCLASS.
 
 
@@ -24,12 +28,17 @@ CLASS ZCL_HR237_LAYER IMPLEMENTATION.
 
 
   METHOD zif_sadl_stream_runtime~create_stream.
-    SPLIT iv_slug AT `|` INTO DATA(lv_layer_id)
-                              DATA(lv_file_name).
+    IF iv_slug IS INITIAL.
+      DATA(lv_error) = _create_new_layer( is_media_resource-value ).
+    ELSE.
+      SPLIT iv_slug AT `|` INTO DATA(lv_layer_id)
+                                DATA(lv_file_name).
 
-    DATA(lv_error) = _upload_layer_image( iv_image     = is_media_resource-value
-                                          iv_layer_id  = CONV #( lv_layer_id )
-                                          iv_file_name = lv_file_name ).
+      lv_error = _upload_layer_image( iv_image     = is_media_resource-value
+                                      iv_layer_id  = CONV #( lv_layer_id )
+                                      iv_file_name = lv_file_name ).
+    ENDIF.
+
 *    io_srv_runtime->set_header(
 *      VALUE #( name  = 'ok-message'
 *               value = |File "{ escape( val = lv_file_name format = cl_abap_format=>e_url ) }" uploaded| ) ).
@@ -39,13 +48,13 @@ CLASS ZCL_HR237_LAYER IMPLEMENTATION.
      layer_id  = lv_layer_id
      message   = COND #( WHEN lv_error IS NOT INITIAL
                          THEN lv_error
-                         ELSE |File "{ lv_file_name }" uploaded| )
+                         ELSE COND #( WHEN iv_slug IS INITIAL
+                                      THEN |New layer is created. Please add png file less than 777 kb|
+                                      ELSE |File "{ lv_file_name }" uploaded| ) )
      is_error  = COND #( WHEN lv_error IS NOT INITIAL
                          THEN 'X'
                          ELSE '-' )
     ).
-
-
   ENDMETHOD.
 
 
@@ -65,6 +74,20 @@ CLASS ZCL_HR237_LAYER IMPLEMENTATION.
     er_stream = NEW /iwbep/cl_mgw_abs_data=>ty_s_media_resource(
       value     = lv_content
       mime_type = |image/png| ).
+  ENDMETHOD.
+
+
+  METHOD _create_new_layer.
+    DATA(ls_cds_layer) = VALUE zc_hr237_layer( ).
+    /ui2/cl_json=>deserialize( EXPORTING jsonx = iv_json_data
+                               CHANGING  data  = ls_cds_layer ).
+
+    " TODO BOPF ?
+    DATA(ls_db) = CORRESPONDING zdhr237_layer( ls_cds_layer ).
+    INSERT zdhr237_layer FROM ls_db.
+    CHECK sy-subrc <> 0.
+
+    rv_error = |Item '{ ls_db-layer_id }' is already exists|.
   ENDMETHOD.
 
 

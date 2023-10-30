@@ -9,14 +9,15 @@
     "sapui5"
   ],
   "main": "webapp/index.html",
-  "dependencies": {},
   "devDependencies": {
-    "@ui5/cli": "^2.14.1",
+    "@sap-ux/ui5-middleware-fe-mockserver": "2",
     "@sap/ux-ui5-tooling": "1",
-    "@sap-ux/ui5-middleware-fe-mockserver": "2"
+    "@ui5/cli": "^3.7.1"
   },
   "scripts": {
     "start": "fiori run --open \"test/flpSandbox.html?sap-client=300&sap-ui-xx-viewCache=false#zhr237-display\"",
+    "start-kt6": "fiori run --config ./ui5-kt6.yaml --open \"test/flpSandbox.html?sap-client=300&sap-ui-xx-viewCache=false#zhr237-display\"",
+    "start-kp6": "fiori run --config ./ui5-kp6.yaml --open \"test/flpSandbox.html?sap-client=300&sap-ui-xx-viewCache=false#zhr237-display\"",
     "start-local": "fiori run --config ./ui5-local.yaml --open \"test/flpSandbox.html?sap-client=300&sap-ui-xx-viewCache=false#zhr237-display\"",
     "build": "ui5 build --config=ui5.yaml --clean-dest --dest dist",
     "deploy": "fiori verify",
